@@ -51,6 +51,8 @@ jobs:
           EFFECTIVE_OPENAI_API_KEY="${OPENROUTER_API_KEY:-$OPENAI_API_KEY}"
           EFFECTIVE_OPENAI_API_KEY="$(printf '%s' "$EFFECTIVE_OPENAI_API_KEY" | tr -d '\r\n' | sed 's/^[[:space:]]*//;s/[[:space:]]*$//')"
 
+          mkdir -p ~/.ssh
+          chmod 700 ~/.ssh
           install -m 600 /dev/null ~/.ssh/dokku_deploy
           printf '%s\n' "$DOKKU_SSH_PRIVATE_KEY" > ~/.ssh/dokku_deploy
           # Normalize Windows/CRLF and ensure trailing newline for OpenSSH
@@ -61,8 +63,6 @@ jobs:
             printf '\n' >> ~/.ssh/dokku_deploy
           fi
 
-          mkdir -p ~/.ssh
-          chmod 700 ~/.ssh
           ssh-keyscan -H "$DOKKU_HOST" >> ~/.ssh/known_hosts 2>/dev/null
 
           SSH=(ssh -i ~/.ssh/dokku_deploy -o IdentitiesOnly=yes -o StrictHostKeyChecking=yes "dokku@$DOKKU_HOST")
