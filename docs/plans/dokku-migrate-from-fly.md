@@ -70,6 +70,7 @@ and keeps hosting on the existing Docklight Dokku node.
 - [x] Dokku app `ai-tools` created; domain `ai-tools.itman.fyi`; ports `80→3000`; dockerfile builder; build secret docker-option; env models set; deploy-branch `main`.
 - [x] GitHub secret `DOKKU_SSH_PRIVATE_KEY` set (reuses Dokku key `github-actions` / local `~/.ssh/dokku_deploy`).
 - [x] Workflow `dokku.yml` + `docs/dokku-deploy.md`; removed `fly.yml` / `fly.toml` / `docs/fly-deploy.md`.
-- [ ] Commit/push migration; first deploy (disk ~95% full — watch for ENOSPC).
-- [ ] DNS cutover from Fly CNAME → VPS A record `95.111.232.131`.
-- [ ] `dokku letsencrypt:enable ai-tools` after DNS.
+- [x] First deploy succeeded on VPS (healthchecks green); CI initially failed on shallow push — fixed with `fetch-depth: 0`.
+- [x] DNS cutover to `95.111.232.131`.
+- [x] `dokku letsencrypt:enable ai-tools` (HTTPS live).
+- [ ] Confirm follow-up Actions run is green after unshallow fix.
