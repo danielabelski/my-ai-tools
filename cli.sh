@@ -33,6 +33,7 @@ INSTALL_SEQUENCE=(
 	# RTK reduces shell-output context for every managed coding assistant.
 	"always:install_rtk"
 	"opencode:install_opencode"
+	"opencode:install_open_cursor"
 	"amp:install_amp"
 	"always:install_global_tools"
 	"ccs:install_ccs"
@@ -1374,6 +1375,40 @@ copy_kilo_configs() {
 	log_success "Kilo CLI configs copied"
 }
 
+# Usage: write_merged_pi_settings <source_settings> <destination_settings> <required_packages>
+# Normalize package entries so object-form packages (e.g. {"source":"npm:..."})
+# and bare strings both match on their source id.
+write_merged_pi_settings() {
+	local source_settings="$1"
+	local destination_settings="$2"
+	local required_packages="$3"
+	jq --argjson required "$required_packages" '
+		def get_source: if type == "object" then .source else . end;
+		(.packages // []) as $packages
+		| .packages = (
+			reduce $required[] as $req (
+				$packages;
+				if any(.[]; get_source == ($req | get_source)) then .
+				else . + [$req]
+				end
+			)
+		)
+	' "$source_settings" >"$destination_settings"
+}
+
+# Usage: pi_settings_has_required_packages <pi_settings> <required_packages>
+# Checks if the given settings file contains all the required packages.
+pi_settings_has_required_packages() {
+	local pi_settings="$1"
+	local required_packages="$2"
+	jq -e --argjson required "$required_packages" '
+		def get_source: if type == "object" then .source else . end;
+		(.packages // []) as $packages
+		| $required
+		| all(. as $req | $packages | any(.[]; get_source == ($req | get_source)))
+	' "$pi_settings" >/dev/null 2>&1
+}
+
 copy_pi_configs() {
 	local pi_status
 	pi_status=$(detect_tool --detailed "pi" "$HOME/.pi") || pi_status="missing"
@@ -1385,10 +1420,43 @@ copy_pi_configs() {
 	log_info "Detected Pi (via $pi_status)"
 	execute_quoted mkdir -p "$HOME/.pi/agent"
 
+	local fusion_packages='["npm:@tintinweb/pi-subagents"]'
+
 	if [ ! -f "$HOME/.pi/agent/settings.json" ]; then
-		copy_config_file "$SCRIPT_DIR/configs/pi/settings.json" "$HOME/.pi/agent/" || true
+		if ! copy_config_file "$SCRIPT_DIR/configs/pi/settings.json" "$HOME/.pi/agent/"; then
+			log_error "Failed to install Pi settings.json; Fusion subagent support requires @tintinweb/pi-subagents"
+			return 1
+		fi
 	else
-		log_info "Pi settings.json already exists at ~/.pi/agent/, preserving existing config"
+		local pi_settings="$HOME/.pi/agent/settings.json"
+		if ! command -v jq >/dev/null 2>&1; then
+			log_error "Pi settings.json exists but jq is unavailable; cannot ensure @tintinweb/pi-subagents for Fusion"
+			return 1
+		elif pi_settings_has_required_packages "$pi_settings" "$fusion_packages"; then
+			log_info "Pi settings.json already includes Fusion subagent support"
+		elif [ "$DRY_RUN" = true ]; then
+			log_info "[DRY RUN] Would add Fusion subagent support to existing Pi settings"
+		else
+			local merged_settings
+			merged_settings=$(execute_quoted mktemp "$HOME/.pi/agent/.settings.json.my-ai-tools.XXXXXX") || return 1
+			if execute_quoted write_merged_pi_settings "$pi_settings" "$merged_settings" "$fusion_packages"; then
+				if ! pi_settings_has_required_packages "$merged_settings" "$fusion_packages"; then
+					log_error "Merged Pi settings are missing required Fusion packages; refusing to install"
+					execute_quoted rm -f "$merged_settings"
+					return 1
+				fi
+				if ! execute_quoted mv -f "$merged_settings" "$pi_settings"; then
+					execute_quoted rm -f "$merged_settings"
+					log_error "Failed to install merged Pi settings with Fusion subagent support"
+					return 1
+				fi
+				log_success "Pi Fusion subagent support added to existing settings"
+			else
+				log_error "Could not merge Fusion subagent support into existing Pi settings; refusing Fusion executor install"
+				execute_quoted rm -f "$merged_settings"
+				return 1
+			fi
+		fi
 	fi
 
 	if [ -d "$SCRIPT_DIR/configs/pi/themes" ]; then

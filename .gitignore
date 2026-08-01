@@ -48,3 +48,5 @@ configs/ccs/cliproxy/cliproxy
 configs/ccs/cliproxy/auth
 configs/cline/providers.json
 /.codex/skills/babysit-pr
+/.pi-subagents/artifacts
+/.pi
