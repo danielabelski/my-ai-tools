@@ -33,6 +33,7 @@ INSTALL_SEQUENCE=(
 	# RTK reduces shell-output context for every managed coding assistant.
 	"always:install_rtk"
 	"opencode:install_opencode"
+	"opencode:install_opencode2"
 	"opencode:install_open_cursor"
 	"amp:install_amp"
 	"always:install_global_tools"
@@ -1029,10 +1030,17 @@ setup_commandcode_mcp_servers() {
 }
 
 copy_opencode_configs() {
-	local opencode_status
-	opencode_status=$(detect_tool --detailed "opencode" "$HOME/.config/opencode") || opencode_status="missing"
+	local opencode_status="missing"
+	if command -v opencode2 &>/dev/null; then
+		opencode_status="command-v2"
+	elif command -v opencode &>/dev/null; then
+		opencode_status="command-v1"
+	elif [ -d "$HOME/.config/opencode" ]; then
+		opencode_status="directory"
+	fi
+
 	if [ "$opencode_status" = "missing" ]; then
-		log_info "OpenCode not detected - skipping OpenCode config installation"
+		log_info "OpenCode 1/2 not detected - skipping OpenCode config installation"
 		return 0
 	fi
 
