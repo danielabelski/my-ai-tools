@@ -397,6 +397,31 @@ generate_kilo_configs() {
 	fi
 }
 
+generate_reasonix_configs() {
+	log_info "Generating Reasonix configs..."
+	local reasonix_dir
+	reasonix_dir=$(get_reasonix_dir)
+
+	if [ -d "$reasonix_dir" ]; then
+		execute_quoted mkdir -p "$SCRIPT_DIR/configs/reasonix"
+		copy_single "$reasonix_dir/config.toml" "$SCRIPT_DIR/configs/reasonix/config.toml"
+		copy_single "$reasonix_dir/AGENTS.md" "$SCRIPT_DIR/configs/reasonix/AGENTS.md"
+		if [ -f "$reasonix_dir/statusline.sh" ]; then
+			copy_single "$reasonix_dir/statusline.sh" "$SCRIPT_DIR/configs/reasonix/statusline.sh"
+		fi
+		if [ -d "$reasonix_dir/hooks" ]; then
+			copy_directory "$reasonix_dir/hooks" "$SCRIPT_DIR/configs/reasonix/hooks"
+		fi
+		if [ -d "$reasonix_dir/themes" ]; then
+			copy_directory "$reasonix_dir/themes" "$SCRIPT_DIR/configs/reasonix/themes"
+			log_success "Reasonix themes generated"
+		fi
+		log_success "Reasonix configs generated"
+	else
+		log_warning "Reasonix config directory not found: $reasonix_dir"
+	fi
+}
+
 generate_pi_configs() {
 	log_info "Generating Pi configs..."
 
@@ -1005,6 +1030,9 @@ main() {
 	echo
 
 	generate_kilo_configs
+	echo
+
+	generate_reasonix_configs
 	echo
 
 	generate_pi_configs
