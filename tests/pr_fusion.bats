@@ -207,6 +207,12 @@ JSON
 
 @test "Amp Fusion mode restricts lead tools and exposes executor delegation" {
 	local plugin="$REPO_ROOT/configs/amp/plugins/fusion-agents.ts"
+	local watchdog="$REPO_ROOT/configs/amp/lib/fusion-watchdog.ts"
+	[ -f "$watchdog" ]
+	# Watchdog helper must NOT live in the plugins directory — Amp scans every
+	# .ts file there as a standalone plugin, and the helper has no default
+	# export, causing "Plugin must export a default function" crashes.
+	[ ! -f "$REPO_ROOT/configs/amp/plugins/fusion-watchdog.ts" ]
 	run grep -F 'name: "fusion_executor"' "$plugin"
 	[ "$status" -eq 0 ]
 	run grep -F 'key: "fusion"' "$plugin"
@@ -220,30 +226,61 @@ JSON
 	run grep -F 'event.tool === "fusion_executor"' "$plugin"
 	[ "$status" -eq 0 ]
 	run grep -F 'show: true' "$plugin"
+	[ "$status" -ne 0 ]
+	# agent.run() pattern — no manual createThread/show.
+	run grep -F 'executor.run(' "$plugin"
 	[ "$status" -eq 0 ]
-	run grep -F 'isActiveExecutor(threadID)' "$plugin"
-	[ "$status" -eq 0 ]
-	run grep -F 'executorLifecycle.set(thread.id, "active")' "$plugin"
-	[ "$status" -eq 0 ]
-	run grep -F 'closeExecutor(thread.id)' "$plugin"
-	[ "$status" -eq 0 ]
-	run grep -F 'isClosedExecutor(threadID)' "$plugin"
+	run grep -F 'parentThreadID: ctx.thread.id' "$plugin"
 	[ "$status" -eq 0 ]
 	run grep -F 'leadThreadIDs.add' "$plugin"
 	[ "$status" -eq 0 ]
 	run grep -F 'failedExecutorEnvelope' "$plugin"
 	[ "$status" -eq 0 ]
-	run grep -F 'await thread.cancel()' "$plugin"
-	[ "$status" -eq 0 ]
-	# Bounded eviction (regression guard for the direction bug): the shared
-	# evictOldest helper must evict oldest entries, and the dead isKnownExecutor
-	# helper must stay removed so closed/active checks don't regress.
+	# Bounded eviction for lead thread IDs, active lead set, and agent cache.
 	run grep -F 'evictOldest(leadThreadIDs)' "$plugin"
 	[ "$status" -eq 0 ]
-	run grep -F 'evictOldest(executorLifecycle)' "$plugin"
+	run grep -F 'evictOldest(activeLeadThreadIDs)' "$plugin"
 	[ "$status" -eq 0 ]
 	run grep -F 'evictOldest(threadAgentCache)' "$plugin"
 	[ "$status" -eq 0 ]
+	# Watchdog module is a standalone tested utility — ExecutorWaitError lives there.
+	run grep -F 'class ExecutorWaitError' "$watchdog"
+	[ "$status" -eq 0 ]
+	# Plugin imports the timeout constant from the watchdog module.
+	run grep -F 'EXECUTOR_MAX_TIMEOUT_MS' "$plugin"
+	[ "$status" -eq 0 ]
+	# No custom watchdog race — agent.run() timeoutMs handles the absolute cap.
+	# A Promise.race that can't cancel the losing promise leaves the executor
+	# running in the background, so it was removed for safety.
+	[ "$(grep -c 'createActivityWatchdog' "$plugin")" -eq 0 ]
+	[ "$(grep -c 'Promise.race' "$plugin")" -eq 0 ]
+	[ "$(grep -c 'watchdog.cleanup' "$plugin")" -eq 0 ]
+	# Active lead tracking uses a Set (concurrent-safe) not a single variable.
+	run grep -F 'activeLeadThreadIDs' "$plugin"
+	[ "$status" -eq 0 ]
+	run grep -F 'activeLeadThreadIDs.add' "$plugin"
+	[ "$status" -eq 0 ]
+	run grep -F 'activeLeadThreadIDs.delete' "$plugin"
+	[ "$status" -eq 0 ]
+	# No single-variable active-run state — concurrent leads must not overwrite.
+	[ "$(grep -c 'activeRunLastActivity' "$plugin")" -eq 0 ]
+	[ "$(grep -c 'activeRunInFlight' "$plugin")" -eq 0 ]
+	[ "$(grep -c 'activeRunLeadThreadID' "$plugin")" -eq 0 ]
+	# No split-state maps.
+	[ "$(grep -c 'executorLifecycle' "$plugin")" -eq 0 ]
+	[ "$(grep -c 'executorLastActivity' "$plugin")" -eq 0 ]
+	[ "$(grep -c 'executorInFlight' "$plugin")" -eq 0 ]
+	[ "$(grep -c 'ExecutorSession' "$plugin")" -eq 0 ]
+	[ "$(grep -c 'evictClosedSessions' "$plugin")" -eq 0 ]
+	# No manual lifecycle — use agent.run() instead.
+	[ "$(grep -c 'createThread' "$plugin")" -eq 0 ]
+	[ "$(grep -c 'thread.append' "$plugin")" -eq 0 ]
+	[ "$(grep -c 'waitForResponse' "$plugin")" -eq 0 ]
+	# MAX_RECOMMENDED_TASK_CHARS must be a plugin local, not in the watchdog module.
+	run grep -F 'MAX_RECOMMENDED_TASK_CHARS' "$plugin"
+	[ "$status" -eq 0 ]
+	run grep -F 'MAX_RECOMMENDED_TASK_CHARS' "$watchdog"
+	[ "$status" -ne 0 ]
 	run grep -F 'MAX_COLLECTION_SIZE' "$plugin"
 	[ "$status" -eq 0 ]
 	run grep -F 'RETAIN_COUNT' "$plugin"
@@ -285,6 +322,9 @@ JSON
 	[ "$status" -eq 0 ]
 	run grep -F 'copy_config_file "$plugin_dir" "$HOME/.config/amp/plugins"' "$REPO_ROOT/cli.sh"
 	[ "$status" -eq 0 ]
+	# Installer must copy shared library modules to a non-plugin directory.
+	run grep -F 'safe_copy_dir "$SCRIPT_DIR/configs/amp/lib" "$HOME/.config/amp/lib"' "$REPO_ROOT/cli.sh"
+	[ "$status" -eq 0 ]
 	run grep -F 'safe_copy_dir "$SCRIPT_DIR/configs/codex/agents"' "$REPO_ROOT/cli.sh"
 	[ "$status" -eq 0 ]
 	run grep -F 'safe_copy_dir "$SCRIPT_DIR/configs/pi/agents"' "$REPO_ROOT/cli.sh"
@@ -292,6 +332,28 @@ JSON
 	run grep -F 'pi_settings_has_required_packages' "$REPO_ROOT/cli.sh"
 	[ "$status" -eq 0 ]
 	run grep -F 'def get_source: if type == "object" then .source else . end' "$REPO_ROOT/cli.sh"
+	[ "$status" -eq 0 ]
+}
+
+@test "every TypeScript file in amp plugins exports a default function" {
+	# Amp scans every .ts file in ~/.config/amp/plugins as a standalone plugin.
+	# A module without a default export crashes with "Plugin must export a
+	# default function". This regression guard ensures no helper modules are
+	# accidentally placed in the plugins directory.
+	for ts_file in "$REPO_ROOT"/configs/amp/plugins/*.ts; do
+		[ -f "$ts_file" ]
+		run grep -F 'export default function' "$ts_file"
+		[ "$status" -eq 0 ]
+	done
+}
+
+@test "Amp installer removes stale fusion-watchdog plugin during upgrades" {
+	# Regression: fusion-watchdog.ts was relocated from plugins/ to lib/.
+	# A stale copy in ~/.config/amp/plugins causes a plugin startup crash.
+	# The installer must remove it during upgrades.
+	run grep -F 'execute "rm -f' "$REPO_ROOT/cli.sh"
+	[ "$status" -eq 0 ]
+	run grep -F 'stale_plugin' "$REPO_ROOT/cli.sh"
 	[ "$status" -eq 0 ]
 }
 

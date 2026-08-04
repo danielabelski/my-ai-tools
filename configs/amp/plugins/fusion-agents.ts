@@ -1,11 +1,15 @@
 // @amp-agent-mode {"key":"fusion","label":"Fusion"}
 
 import type { PluginAPI } from "@ampcode/plugin";
+import { EXECUTOR_MAX_TIMEOUT_MS } from "../lib/fusion-watchdog";
+
+/** Soft warning threshold for oversized task specifications (~2000 tokens). */
+const MAX_RECOMMENDED_TASK_CHARS = 8000;
 
 const LEAD_INSTRUCTIONS = `
 You are the Fusion lead. Own interpretation, investigation, architecture, task decomposition, review, and final verification. You have no file mutation or shell tools. Delegate every implementation change through fusion_executor.
 
-Send the executor a bounded specification with OBJECTIVE, FILES, INTERFACES, CONSTRAINTS, SKILLS, and VERIFICATION. List exact paths only for relevant skills. Gate the result by reading every claimed path or artifact and checking scope, symbols, exact verification outcomes, and loaded skills. Send at most one targeted correction, then stop with evidence if it still fails. Relay blocking questions without dropping or reordering options.
+Send the executor a bounded specification with OBJECTIVE, FILES, INTERFACES, CONSTRAINTS, SKILLS, and VERIFICATION. Keep each specification concise and focused — never paste full PRDs or raw requirements verbatim; state self-contained objectives and list exact paths only for relevant skills. Gate the result by reading every claimed path or artifact and checking scope, symbols, exact verification outcomes, and loaded skills. Send at most one targeted correction, then stop with evidence if it still fails. Relay blocking questions without dropping or reordering options.
 
 Do not broaden scope or delegate commits, pushes, deployments, destructive actions, or external side effects without explicit user approval.
 
@@ -47,10 +51,6 @@ const EXECUTOR_TOOLS = [
 	"mcp__*",
 ] as const;
 
-const EXECUTOR_TIMEOUT_MS = 20 * 60 * 1000; // 20 minutes
-
-type ExecutorLifecycle = "active" | "closed";
-
 function failedExecutorEnvelope(reason: string, verification = "none"): string {
 	return [
 		"STATUS: failed",
@@ -65,22 +65,23 @@ function failedExecutorEnvelope(reason: string, verification = "none"): string {
 	].join("\n");
 }
 
-function isFusionLeadDefinition(
-	definition: { kind: string; name?: string } | undefined | null,
-): boolean {
+function isFusionLeadDefinition(definition: { kind: string; name?: string } | undefined | null): boolean {
 	return definition?.kind === "agent-definition" && definition?.name === "fusion-lead";
 }
 
-function isFusionExecutorDefinition(
-	definition: { kind: string; name?: string } | undefined | null,
-): boolean {
+function isFusionExecutorDefinition(definition: { kind: string; name?: string } | undefined | null): boolean {
 	return definition?.kind === "agent-definition" && definition?.name === "fusion-executor";
 }
 
 export default function fusionAgents(amp: PluginAPI) {
 	// Exact thread IDs owned by this plugin instance. Name checks alone are not a unique principal.
 	const leadThreadIDs = new Set<string>();
-	const executorLifecycle = new Map<string, ExecutorLifecycle>();
+
+	// Lead threads that currently have an executor run in flight. Uses a Set
+	// (not a single variable) so concurrent Fusion leads don't overwrite each
+	// other's state. When this set is empty, orphaned executor threads are
+	// rejected to prevent background mutation after a run ends.
+	const activeLeadThreadIDs = new Set<string>();
 
 	// Cache thread agent definitions to avoid redundant database lookups.
 	// @ampcode/plugin types are not bundled in this repo, so the cached value is
@@ -104,10 +105,9 @@ export default function fusionAgents(amp: PluginAPI) {
 		}
 	};
 
-	// Keep all three collections bounded to prevent unbounded growth in long-lived sessions.
 	const limitCollections = () => {
 		evictOldest(leadThreadIDs);
-		evictOldest(executorLifecycle);
+		evictOldest(activeLeadThreadIDs);
 		evictOldest(threadAgentCache);
 	};
 
@@ -121,32 +121,10 @@ export default function fusionAgents(amp: PluginAPI) {
 		return agent;
 	};
 
-	const isActiveExecutor = (threadID: string) => executorLifecycle.get(threadID) === "active";
-	const isClosedExecutor = (threadID: string) => executorLifecycle.get(threadID) === "closed";
-
-	const closeExecutor = (threadID: string) => {
-		if (!executorLifecycle.has(threadID)) return;
-		executorLifecycle.set(threadID, "closed");
-	};
-
 	amp.on("tool.call", async (event) => {
 		const threadID = event.thread.id;
 
-		// 1. Fast-path: Allow active executor tool calls immediately without lookups.
-		if (isActiveExecutor(threadID)) {
-			return { action: "allow" };
-		}
-
-		// 2. Fast-path: Reject closed/inactive executor tool calls immediately without lookups.
-		if (isClosedExecutor(threadID)) {
-			return {
-				action: "reject-and-continue",
-				message:
-					"Fusion executor task is no longer active. Stop tool use and wait for a new delegated task.",
-			};
-		}
-
-		// 3. Delegation checks for the fusion_executor tool.
+		// Delegation check: only the Fusion lead can call fusion_executor.
 		if (event.tool === "fusion_executor") {
 			if (leadThreadIDs.has(threadID)) {
 				return { action: "allow" };
@@ -164,15 +142,16 @@ export default function fusionAgents(amp: PluginAPI) {
 			};
 		}
 
-		// 4. Fallback for orphaned or completed executor threads not in our active lifecycle map.
-		if (!leadThreadIDs.has(threadID)) {
+		// Reject orphaned fusion-executor threads when no run is active.
+		// This prevents stale executor threads from making tool calls after
+		// their run has ended or timed out.
+		if (!leadThreadIDs.has(threadID) && activeLeadThreadIDs.size === 0) {
 			const agent = await getThreadAgent(threadID);
 			const definition = agent?.definition;
 			if (isFusionExecutorDefinition(definition)) {
 				return {
 					action: "reject-and-continue",
-					message:
-						"Fusion executor task is no longer active. Stop tool use and wait for a new delegated task.",
+					message: "Fusion executor task is no longer active. Stop tool use and wait for a new delegated task.",
 				};
 			}
 		}
@@ -202,45 +181,40 @@ export default function fusionAgents(amp: PluginAPI) {
 		async execute(input, ctx) {
 			const task = typeof input?.task === "string" ? input.task.trim() : "";
 			if (!task) return "Missing implementation specification.";
+			if (task.length > MAX_RECOMMENDED_TASK_CHARS) {
+				console.warn(
+					`[fusion] Specification length (${task.length} chars) exceeds recommended maximum (${MAX_RECOMMENDED_TASK_CHARS} chars / ~2000 tokens). Consider decomposing into smaller tasks.`,
+				);
+			}
 			const caller = await ctx.thread.agent();
 			const definition = caller?.definition;
 			if (!isFusionLeadDefinition(definition)) {
 				return "Only the Fusion lead can delegate to the Fusion executor.";
 			}
 			leadThreadIDs.add(ctx.thread.id);
+			activeLeadThreadIDs.add(ctx.thread.id);
 			limitCollections();
 
-			const thread = await executor.createThread({
-				parentThreadID: ctx.thread.id,
-				show: true,
-			});
-			executorLifecycle.set(thread.id, "active");
-			limitCollections();
+			// Use agent.run() — the documented custom-subagent pattern. This
+			// handles thread lifecycle internally and avoids the 30-second
+			// thread.messages RPC timeout that the manual approach hits.
+			// run()'s timeoutMs provides the 60-minute absolute cap.
 			try {
-				await thread.append([{ type: "user-message", content: task }]);
-				const response = await thread.waitForResponse({ timeoutMs: EXECUTOR_TIMEOUT_MS });
-				return response.content
-					.filter((block) => block.type === "text")
-					.map((block) => block.text)
-					.join("\n");
+				const result = await executor.run(task, {
+					parentThreadID: ctx.thread.id,
+					timeoutMs: EXECUTOR_MAX_TIMEOUT_MS,
+				});
+				return result.text;
 			} catch (error) {
-				try {
-					await thread.cancel();
-				} catch {
-					// Late calls still fail closed through the closed-executor lifecycle.
-				}
 				const reason =
-					error instanceof Error
-						? error.message
-						: typeof error === "string"
-							? error
-							: "Executor task failed or timed out.";
-				const verification = /timeout/i.test(reason)
-					? "timeout — unresolved verification commands were not completed"
+					error instanceof Error ? error.message : typeof error === "string" ? error : "Executor task failed or timed out.";
+				const isTimeout = /timeout|timed out/i.test(reason);
+				const verification = isTimeout
+					? "timeout — executor exceeded the maximum wait"
 					: "failed — unresolved verification commands were not completed";
 				return failedExecutorEnvelope(reason, verification);
 			} finally {
-				closeExecutor(thread.id);
+				activeLeadThreadIDs.delete(ctx.thread.id);
 			}
 		},
 	});
