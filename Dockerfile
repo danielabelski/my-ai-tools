@@ -4,7 +4,7 @@ COPY package.json bun.lock ./
 RUN bun install --frozen-lockfile
 COPY . .
 RUN --mount=type=secret,id=OPENAI_API_KEY,env=OPENAI_API_KEY \
-    if [ -n "$OPENAI_API_KEY" ]; then bun run index && bun run index:browser; fi
+    if [ -n "$OPENAI_API_KEY" ]; then bun scripts/index-repo.ts && bun scripts/index-browser.ts; fi
 
 FROM oven/bun:1-slim
 RUN apt-get update && apt-get install -y --no-install-recommends git ca-certificates && rm -rf /var/lib/apt/lists/*
