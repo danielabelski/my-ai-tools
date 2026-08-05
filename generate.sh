@@ -20,9 +20,13 @@ if [[ "${BASH_SOURCE[0]}" == "${0}" ]]; then
 			DRY_RUN=true
 			shift
 			;;
+		-h | --help)
+			echo "Usage: $0 [--dry-run] [-h|--help]"
+			exit 0
+			;;
 		*)
 			echo "Unknown option: $arg"
-			echo "Usage: $0 [--dry-run]"
+			echo "Usage: $0 [--dry-run] [-h|--help]"
 			exit 1
 			;;
 		esac
@@ -446,6 +450,18 @@ generate_pi_configs() {
 		log_warning "Pi MCP config not found: $HOME/.pi/agent/mcp.json"
 	fi
 
+	if [ -f "$HOME/.pi/agent/config.yml" ]; then
+		copy_single "$HOME/.pi/agent/config.yml" "$SCRIPT_DIR/configs/pi/config.yml"
+	fi
+
+	if [ -f "$HOME/.pi/agent/config.yaml" ]; then
+		copy_single "$HOME/.pi/agent/config.yaml" "$SCRIPT_DIR/configs/pi/config.yaml"
+	fi
+
+	if [ -f "$HOME/.pi/agent/config.json" ]; then
+		copy_single "$HOME/.pi/agent/config.json" "$SCRIPT_DIR/configs/pi/config.json"
+	fi
+
 	# Export agents
 	if [ -d "$HOME/.pi/agent/agents" ]; then
 		execute "mkdir -p $SCRIPT_DIR/configs/pi/agents"
@@ -454,6 +470,78 @@ generate_pi_configs() {
 				log_success "Pi agents exported"
 			fi
 		fi
+	fi
+}
+generate_omp_configs() {
+	log_info "Generating Oh My Pi (omp) configs..."
+
+	if [ ! -d "$HOME/.omp" ]; then
+		log_warning "Oh My Pi (omp) config directory not found: $HOME/.omp"
+		return 0
+	fi
+
+	local omp_exported=false
+	execute_quoted mkdir -p "$SCRIPT_DIR/configs/omp"
+
+	if [ -f "$HOME/.omp/agent/config.yml" ]; then
+		copy_single "$HOME/.omp/agent/config.yml" "$SCRIPT_DIR/configs/omp/config.yml" && omp_exported=true
+	elif [ -f "$HOME/.omp/config.yml" ]; then
+		copy_single "$HOME/.omp/config.yml" "$SCRIPT_DIR/configs/omp/config.yml" && omp_exported=true
+	elif [ -f "$HOME/.omp/agent/config.yaml" ]; then
+		copy_single "$HOME/.omp/agent/config.yaml" "$SCRIPT_DIR/configs/omp/config.yaml" && omp_exported=true
+	elif [ -f "$HOME/.omp/config.yaml" ]; then
+		copy_single "$HOME/.omp/config.yaml" "$SCRIPT_DIR/configs/omp/config.yaml" && omp_exported=true
+	elif [ -f "$HOME/.omp/agent/config.json" ]; then
+		copy_single "$HOME/.omp/agent/config.json" "$SCRIPT_DIR/configs/omp/config.json" && omp_exported=true
+	elif [ -f "$HOME/.omp/config.json" ]; then
+		copy_single "$HOME/.omp/config.json" "$SCRIPT_DIR/configs/omp/config.json" && omp_exported=true
+	fi
+
+	if [ -f "$HOME/.omp/agent/AGENTS.md" ]; then
+		copy_single "$HOME/.omp/agent/AGENTS.md" "$SCRIPT_DIR/configs/omp/AGENTS.md" && omp_exported=true
+	elif [ -f "$HOME/.omp/AGENTS.md" ]; then
+		copy_single "$HOME/.omp/AGENTS.md" "$SCRIPT_DIR/configs/omp/AGENTS.md" && omp_exported=true
+	fi
+
+	if [ -f "$HOME/.omp/agent/models.json" ]; then
+		copy_single "$HOME/.omp/agent/models.json" "$SCRIPT_DIR/configs/omp/models.json" && omp_exported=true
+	elif [ -f "$HOME/.omp/models.json" ]; then
+		copy_single "$HOME/.omp/models.json" "$SCRIPT_DIR/configs/omp/models.json" && omp_exported=true
+	fi
+
+	if [ -d "$HOME/.omp/agent/themes" ]; then
+		copy_directory "$HOME/.omp/agent/themes" "$SCRIPT_DIR/configs/omp/themes" && omp_exported=true
+		log_success "Oh My Pi (omp) themes generated"
+	elif [ -d "$HOME/.omp/themes" ]; then
+		copy_directory "$HOME/.omp/themes" "$SCRIPT_DIR/configs/omp/themes" && omp_exported=true
+		log_success "Oh My Pi (omp) themes generated"
+	else
+		log_warning "Oh My Pi (omp) themes directory not found: $HOME/.omp/agent/themes"
+	fi
+
+	if [ -f "$HOME/.omp/agent/mcp.json" ]; then
+		copy_single "$HOME/.omp/agent/mcp.json" "$SCRIPT_DIR/configs/omp/mcp.json" && omp_exported=true
+	elif [ -f "$HOME/.omp/mcp.json" ]; then
+		copy_single "$HOME/.omp/mcp.json" "$SCRIPT_DIR/configs/omp/mcp.json" && omp_exported=true
+	else
+		log_warning "Oh My Pi (omp) MCP config not found: $HOME/.omp/agent/mcp.json"
+	fi
+
+	for src_dir in "$HOME/.omp/agent/agents" "$HOME/.omp/agents"; do
+		if [ -d "$src_dir" ] && [ -n "$(ls -A "$src_dir" 2>/dev/null)" ]; then
+			execute_quoted mkdir -p "$SCRIPT_DIR/configs/omp/agents"
+			if copy_directory "$src_dir" "$SCRIPT_DIR/configs/omp/agents"; then
+				log_success "Oh My Pi (omp) agents exported"
+				omp_exported=true
+			fi
+			break
+		fi
+	done
+
+	if [ "$omp_exported" = true ]; then
+		log_success "Oh My Pi (omp) configs generated"
+	else
+		log_warning "No Oh My Pi (omp) configs found to export"
 	fi
 }
 
@@ -950,7 +1038,7 @@ sanitize_absolute_paths() {
 					walk(fullPath);
 				} else if (stat.isFile()) {
 					const ext = path.extname(file).toLowerCase();
-					if ([".json", ".toml", ".jsonc"].includes(ext)) {
+					if ([".json", ".toml", ".jsonc", ".yaml", ".yml"].includes(ext)) {
 						try {
 							let content = fs.readFileSync(fullPath, "utf8");
 							let modified = false;
@@ -958,7 +1046,7 @@ sanitize_absolute_paths() {
 								content = content.split(home).join("$HOME");
 								modified = true;
 							}
-							if (content.includes("\x27$HOME")) {
+							if ((ext === ".json" || ext === ".jsonc" || ext === ".toml") && content.includes("\x27$HOME")) {
 								content = content.replace(/\x27\$HOME\/([^\x27]*)\x27/g, `"$HOME/$1"`);
 								modified = true;
 							}
@@ -1036,6 +1124,8 @@ main() {
 	echo
 
 	generate_pi_configs
+	echo
+	generate_omp_configs
 	echo
 
 	generate_commandcode_configs
