@@ -3309,6 +3309,10 @@ Copy [`configs/ai-launcher/config.json`](configs/ai-launcher/config.json) to `~/
 
 [**Plannotator**](https://plannotator.ai/) - Annotate plans outside the terminal for better collaboration. ([GitHub](https://github.com/backnotprop/plannotator))
 
+### Waku
+
+[**Waku**](https://github.com/egoist/waku) - A fast, native desktop app for working with local coding agents.
+
 ### Claude-Mem
 
 ⚠️ **DEPRECATED** - Use [qmd Knowledge Management](docs/qmd-knowledge-management.md) instead.
