@@ -1278,6 +1278,10 @@ Custom Amp agent modes live in [`configs/amp/plugins/`](configs/amp/plugins/) an
 | `plannotator.ts`         | —                 | —                                  | Interactive plan annotation          |
 | `orca-agent-status.ts`   | —                 | —                                  | Orca agent status integration        |
 
+The [`my-ai-tools-skills`](configs/amp/plugins/my-ai-tools-skills/) directory plugin also bundles every repository
+skill for personal Amp installation. Amp exposes them with qualified names such as
+`my-ai-tools-skills:code-review`.
+
 See [`configs/amp/AGENTS.md`](configs/amp/AGENTS.md) for agent guidelines.
 
 </details>
