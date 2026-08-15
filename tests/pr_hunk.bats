@@ -52,6 +52,13 @@ README="$REPO_ROOT/README.md"
 		export DRY_RUN=false YES_TO_ALL=true IS_WINDOWS=false VERBOSE=false
 		source "$1/lib/common.sh"
 		source "$1/lib/install.sh"
+		node() {
+			if [ "$1" = "-p" ]; then
+				echo 18
+			else
+				echo v18.0.0
+			fi
+		}
 		_verify_package_manager() { echo npm; }
 		execute() {
 			[ "$1" != "hunk --version >/dev/null" ]
