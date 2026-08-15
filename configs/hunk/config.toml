@@ -1,0 +1,15 @@
+theme = "kanagawa-wave"
+mode = "auto"
+cursor_line = "row"
+vcs = "git"
+watch = false
+exclude_untracked = false
+line_numbers = true
+tab_width = 4
+wrap_lines = false
+hunk_headers = true
+menu_bar = true
+agent_notes = true
+copy_decorations = false
+prompt_save_view_preferences = true
+transparent_background = false

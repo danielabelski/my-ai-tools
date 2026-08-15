@@ -53,6 +53,7 @@ INSTALL_SEQUENCE=(
 	"conductor:install_conductor"
 	"herdr:install_herdr"
 	"ctx:install_ctx"
+	"hunk:install_hunk"
 	"qodercli:install_qodercli"
 	"kiro:install_kiro"
 	"codiff:install_codiff"
@@ -349,6 +350,7 @@ backup_configs() {
 		copy_config_dir "$HOME/.codiff" "$BACKUP_DIR" "codiff"
 		copy_config_dir "$HOME/.config/devin" "$BACKUP_DIR" "devin"
 		copy_config_dir "$HOME/.ctx" "$BACKUP_DIR" "ctx"
+		copy_config_dir "${XDG_CONFIG_HOME:-$HOME/.config}/hunk" "$BACKUP_DIR" "hunk"
 		copy_config_file "$HOME/.config/ai-launcher/config.json" "$BACKUP_DIR/ai-launcher" || true
 
 		log_success "Backup completed: $BACKUP_DIR"
@@ -576,6 +578,11 @@ copy_configurations() {
 	else
 		log_info "Skipping ctx config install (not in -y allowlist)"
 	fi
+	if tool_allowed "hunk"; then
+		copy_hunk_configs
+	else
+		log_info "Skipping hunk config install (not in -y allowlist)"
+	fi
 	if tool_allowed "qodercli"; then
 		copy_qodercli_configs
 	else
@@ -636,6 +643,7 @@ _validate_config_tool_name() {
 		*antigravity-cli/settings.json*) echo "antigravity" ;;
 		*kilo/config.json*) echo "kilo" ;;
 		*reasonix/config.toml*) echo "reasonix" ;;
+		*hunk/config.toml*) echo "hunk" ;;
 		*kimi-code/*.json* | *kimi-code/*.toml*) echo "kimi_code" ;;
 		*pi/settings.json*) echo "pi" ;;
 		*omp/*.yml* | *omp/*.yaml* | *omp/*.json*) echo "omp" ;;
@@ -681,6 +689,7 @@ validate_all_configs() {
 		"$SCRIPT_DIR/configs/antigravity-cli/settings.json" \
 		"$SCRIPT_DIR/configs/kilo/config.json" \
 		"$SCRIPT_DIR/configs/reasonix/config.toml" \
+		"$SCRIPT_DIR/configs/hunk/config.toml" \
 		"$SCRIPT_DIR/configs/kimi-code/config.toml" \
 		"$SCRIPT_DIR/configs/kimi-code/mcp.json" \
 		"$SCRIPT_DIR/configs/pi/settings.json" \
@@ -1768,6 +1777,23 @@ copy_ctx_configs() {
 	log_success "ctx configs copied"
 }
 
+copy_hunk_configs() {
+	local hunk_status
+	local hunk_dir="${XDG_CONFIG_HOME:-$HOME/.config}/hunk"
+	hunk_status=$(detect_tool --detailed "hunk" "$hunk_dir") || hunk_status="missing"
+	if [ "$hunk_status" = "missing" ]; then
+		log_info "Hunk not detected - skipping Hunk config installation"
+		return 0
+	fi
+
+	log_info "Detected Hunk (via $hunk_status)"
+	execute_quoted mkdir -p "$hunk_dir"
+
+	copy_config_file "$SCRIPT_DIR/configs/hunk/config.toml" "$hunk_dir/" || true
+
+	log_success "Hunk configs copied"
+}
+
 copy_qodercli_configs() {
 	local qodercli_status
 	qodercli_status=$(detect_tool --detailed "qodercli" "$HOME/.qoder") || qodercli_status="missing"
@@ -2628,7 +2654,7 @@ main() {
 	echo "║  Claude • OpenCode • Amp • CCS • Codex • Kimi Code • Gemini          ║"
 	echo "║  Antigravity • Pi • Kilo • Copilot • Cursor • Command Code           ║"
 	echo "║  Factory Droid • Cline • Grok • MiMo-Code • herdr                    ║"
-	echo "║  Qoder CLI • Kiro • Codiff • Devin                                   ║"
+	echo "║  Qoder CLI • Kiro • Codiff • Devin • Hunk                            ║"
 	echo "║  ctx • Reasonix                                                       ║"
 	echo "╚══════════════════════════════════════════════════════════════════════╝"
 	echo

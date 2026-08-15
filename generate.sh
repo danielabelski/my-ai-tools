@@ -842,6 +842,22 @@ generate_ctx_configs() {
 	log_success "ctx configs generated"
 }
 
+generate_hunk_configs() {
+	log_info "Generating Hunk configs..."
+	local hunk_dir="${XDG_CONFIG_HOME:-$HOME/.config}/hunk"
+
+	if [ ! -d "$hunk_dir" ]; then
+		log_warning "Hunk config directory not found: $hunk_dir"
+		return 0
+	fi
+
+	execute "mkdir -p \"$SCRIPT_DIR/configs/hunk\""
+
+	copy_single "$hunk_dir/config.toml" "$SCRIPT_DIR/configs/hunk/config.toml"
+
+	log_success "Hunk configs generated"
+}
+
 generate_qodercli_configs() {
 	log_info "Generating Qoder CLI configs..."
 
@@ -1156,6 +1172,9 @@ main() {
 	echo
 
 	generate_ctx_configs
+	echo
+
+	generate_hunk_configs
 	echo
 
 	generate_qodercli_configs

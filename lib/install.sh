@@ -627,6 +627,11 @@ install_open_code_review() {
 		"npm install -g @alibaba-group/open-code-review"
 }
 
+install_hunk() {
+	install_npm_tool "Hunk" "hunk" "hunkdiff" \
+		"npm install --global hunkdiff"
+}
+
 install_conductor() {
 	if [ -d "/Applications/Conductor.app" ]; then
 		log_success "Conductor is already installed"

@@ -4,7 +4,7 @@
 [![GitHub license](https://img.shields.io/github/license/jellydn/my-ai-tools)](https://github.com/jellydn/my-ai-tools/blob/main/LICENSE)
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](https://github.com/jellydn/my-ai-tools/pulls)
 
-> **Comprehensive configuration management for AI coding tools** - Replicate my complete setup for Claude Code, OpenCode, Amp, Kilo CLI, Codex, Devin CLI, Kimi Code, Gemini CLI, Antigravity CLI, Pi, Oh My Pi, GitHub Copilot CLI, Cursor Agent CLI, Factory Droid, Cline, Grok CLI, MiMo-Code, Qoder CLI, Kiro CLI, Codiff, ctx, Open Code Review, CCS, and Reasonix with custom configurations, MCP servers, skills, plugins, and commands.
+> **Comprehensive configuration management for AI coding tools** - Replicate my complete setup for Claude Code, OpenCode, Amp, Kilo CLI, Codex, Devin CLI, Kimi Code, Gemini CLI, Antigravity CLI, Pi, Oh My Pi, GitHub Copilot CLI, Cursor Agent CLI, Factory Droid, Cline, Grok CLI, MiMo-Code, Qoder CLI, Kiro CLI, Hunk, Codiff, ctx, Open Code Review, CCS, and Reasonix with custom configurations, MCP servers, skills, plugins, and commands.
 
 📖 **[View Documentation Website](https://ai-tools.itman.fyi)** - Interactive landing page with full documentation and search.
 
@@ -12,7 +12,7 @@
 
 - 🚀 **One-line installer** - Get started in seconds
 - 🔄 **Bidirectional sync** - Install configs or export your current setup
-- 🤖 **Multiple AI tools** - Claude Code, OpenCode, Amp, CCS, Devin, Kimi Code, Gemini, Antigravity, Grok, MiMo-Code, Qoder CLI, Kiro CLI, Codiff, ctx, Open Code Review, Reasonix, and more
+- 🤖 **Multiple AI tools** - Claude Code, OpenCode, Amp, CCS, Devin, Kimi Code, Gemini, Antigravity, Grok, MiMo-Code, Qoder CLI, Kiro CLI, Hunk, Codiff, ctx, Open Code Review, Reasonix, and more
 - 🔌 **MCP Server integration** - Context7, Sequential-thinking, qmd, codebase-memory-mcp, agentmemory, sem, ctx
 - 🎯 **Custom agents & skills** - Pre-configured for maximum productivity
 - 🤝 **Agent Teams** - Coordinate specialized agents for complex workflows (code review, testing, docs)
@@ -2982,6 +2982,56 @@ kiro /usage
 See the full [Kiro CLI docs](https://kiro.dev/docs/cli/installation/) for details.
 
 ## </details>
+
+## 🔍 Hunk (Optional)
+
+Review-first terminal diff viewer for agent-authored changesets, with multi-file navigation, inline agent notes, watch mode, and Git, Jujutsu, and Sapling support. [Homepage](https://www.hunk.dev/) | [Docs](https://www.hunk.dev/docs/) | [GitHub](https://github.com/modem-dev/hunk)
+
+<details>
+<summary><strong>Installation &amp; Configuration</strong></summary>
+
+### Installation
+
+```bash
+# Cross-platform (Node.js 18+)
+npm install --global hunkdiff
+
+# macOS (Homebrew core)
+brew install hunk
+```
+
+Or run this repo's installer:
+
+```bash
+./cli.sh
+```
+
+### Configuration
+
+The checked-in [`configs/hunk/config.toml`](configs/hunk/config.toml) is installed to `$XDG_CONFIG_HOME/hunk/config.toml`, or `~/.config/hunk/config.toml` when `XDG_CONFIG_HOME` is unset. It selects Hunk's built-in Kanagawa Wave theme and shows agent notes when a review opens.
+
+Repository-specific settings can override the user config in `.hunk/config.toml`. CLI flags have the highest precedence. This integration does not change the global Git pager; opt in separately if desired:
+
+```bash
+git config --global core.pager "hunk pager"
+```
+
+### Usage
+
+```bash
+hunk diff          # Review the working tree, including untracked files
+hunk diff --watch  # Reload as an agent changes the working tree
+hunk show          # Review the latest commit
+hunk session list  # List live review sessions for agent interaction
+```
+
+The recommended [Hunk Review skill](https://github.com/modem-dev/hunk/blob/main/skills/hunk-review/SKILL.md) teaches coding agents to inspect live sessions and add inline comments without launching the interactive TUI themselves.
+
+See the official [install guide](https://www.hunk.dev/docs/start/install/) and [config reference](https://www.hunk.dev/docs/reference/config) for all platforms and preferences.
+
+</details>
+
+---
 
 ## 🎨 Codiff (Optional)
 
