@@ -1787,9 +1787,12 @@ copy_hunk_configs() {
 	fi
 
 	log_info "Detected Hunk (via $hunk_status)"
-	execute_quoted mkdir -p "$hunk_dir"
+	execute_quoted mkdir -p "$hunk_dir" || return 1
 
-	copy_config_file "$SCRIPT_DIR/configs/hunk/config.toml" "$hunk_dir/" || true
+	if ! copy_config_file "$SCRIPT_DIR/configs/hunk/config.toml" "$hunk_dir/"; then
+		log_error "Failed to copy Hunk config to $hunk_dir"
+		return 1
+	fi
 
 	log_success "Hunk configs copied"
 }

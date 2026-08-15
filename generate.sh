@@ -851,6 +851,11 @@ generate_hunk_configs() {
 		return 0
 	fi
 
+	if [ ! -f "$hunk_dir/config.toml" ]; then
+		log_warning "Hunk config not found: $hunk_dir/config.toml"
+		return 0
+	fi
+
 	execute "mkdir -p \"$SCRIPT_DIR/configs/hunk\""
 
 	copy_single "$hunk_dir/config.toml" "$SCRIPT_DIR/configs/hunk/config.toml"

@@ -628,8 +628,43 @@ install_open_code_review() {
 }
 
 install_hunk() {
-	install_npm_tool "Hunk" "hunk" "hunkdiff" \
-		"npm install --global hunkdiff"
+	_run_hunk_install() {
+		if ! command -v node &>/dev/null; then
+			log_error "Hunk's npm package requires Node.js 18 or newer."
+			log_info "Install Node.js 18+ or install Hunk through Homebrew or mise."
+			return 1
+		fi
+
+		local node_major
+		node_major=$(node -p 'process.versions.node.split(".")[0]' 2>/dev/null) || node_major=""
+		if ! [[ "$node_major" =~ ^[0-9]+$ ]] || [ "$node_major" -lt 18 ]; then
+			log_error "Hunk requires Node.js 18 or newer (found: $(node --version 2>/dev/null || echo unknown))."
+			return 1
+		fi
+
+		local pkg_manager
+		pkg_manager=$(_verify_package_manager "Hunk")
+		if [ -z "$pkg_manager" ]; then
+			log_error "No package manager found. Install npm or Bun to install Hunk."
+			return 1
+		fi
+
+		log_info "Installing Hunk with $pkg_manager..."
+		if ! execute "$pkg_manager install -g hunkdiff"; then
+			log_error "Failed to install Hunk"
+			log_info "You can install it manually: npm install --global hunkdiff"
+			return 1
+		fi
+
+		if ! execute "hunk --version >/dev/null"; then
+			log_error "Hunk was installed but could not start."
+			return 1
+		fi
+
+		log_success "Hunk installed and verified"
+	}
+
+	run_installer "Hunk" "_run_hunk_install" "command -v hunk && hunk --version" "hunk --version"
 }
 
 install_conductor() {
