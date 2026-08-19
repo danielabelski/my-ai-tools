@@ -11,11 +11,14 @@ Advanced models can traverse vast solution spaces, making unknown discovery crit
 ## Discovery Workflow
 
 ```text
+accountable-engineering → Meta workflow for disciplined AI-assisted engineering
 1. blindspot-pass → Identify unknown unknowns
 2. spec-interview → Clarify requirements
 3. [Implementation with logging]
 4. quiz-me → Verify understanding
 ```
+
+See `skills/accountable-engineering/SKILL.md` for the full 8-step accountable workflow (define constraints → propose → review → implement → verify → document → own outcomes).
 
 ## Skills
 

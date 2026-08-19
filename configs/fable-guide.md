@@ -217,6 +217,29 @@ As agents become more capable, **your role shifts**:
 
 The goal isn't to disconnect—it's to work at a higher level of abstraction while maintaining deep understanding.
 
+### Accountable Engineering (Addy Osmani)
+
+AI increases how much software people can build. It does not remove accountability for outcomes.
+
+**Avoid cognitive surrender**: accepting AI output without understanding major architectural, security, and business decisions.
+
+**Mutual amplification**: the agent records decisions and lessons; you review and internalize them. Faster output alone is not the goal—a better developer-agent feedback loop is.
+
+For every non-trivial AI-assisted task:
+
+1. Define behavior and constraints
+2. Propose approach before implementation
+3. Review architecture and key decisions
+4. Implement in small steps
+5. Run tests and inspect edge cases
+6. Document what was learned
+7. Review the final result yourself
+8. Own deployment and maintenance
+
+That is disciplined AI-assisted engineering—not vibe coding.
+
+See @skills/accountable-engineering/ for the full workflow, anti-patterns, and integration with discovery and review skills.
+
 ## Practical Examples
 
 ### Example 1: Adding Auth Provider
@@ -292,6 +315,7 @@ The field is evolving fast. What's impossible today may be trivial tomorrow.
 
 ## References
 
+- [The Future of Software Engineering with AI - Addy Osmani](https://www.youtube.com/watch?v=2fyPnxKu8ZM)
 - [Field Guide to Fable - Thariq Shihipar (AI Engineer 2026)](https://www.youtube.com/watch?v=9fubhllmsBU)
 - [The Biology of a Large Language Model - Anthropic Research](https://www.anthropic.com/)
 - Capability overhang: When model intelligence exceeds our ability to harness it
