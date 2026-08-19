@@ -238,7 +238,7 @@ For every non-trivial AI-assisted task:
 
 That is disciplined AI-assisted engineering—not vibe coding.
 
-See @skills/accountable-engineering/ for the full workflow, anti-patterns, and integration with discovery and review skills.
+See @~/.agents/skills/accountable-engineering/SKILL.md for the full workflow, anti-patterns, and integration with discovery and review skills.
 
 ## Practical Examples
 

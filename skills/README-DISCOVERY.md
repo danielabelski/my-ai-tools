@@ -18,7 +18,7 @@ accountable-engineering → Meta workflow for disciplined AI-assisted engineerin
 4. quiz-me → Verify understanding
 ```
 
-See `skills/accountable-engineering/SKILL.md` for the full 8-step accountable workflow (define constraints → propose → review → implement → verify → document → own outcomes).
+See [`accountable-engineering/SKILL.md`](accountable-engineering/SKILL.md) for the full 8-step accountable workflow (define constraints → propose → review → implement → verify → document → own outcomes).
 
 ## Skills
 

@@ -1,6 +1,6 @@
 ---
 name: "accountable-engineering"
-description: "Disciplined AI-assisted engineering — own outcomes, avoid cognitive surrender, and amplify the human-agent feedback loop"
+description: "Guides disciplined AI-assisted engineering that avoids cognitive surrender and keeps humans accountable. Use for non-trivial implementation, architecture, security, and operational tasks."
 license: "MIT"
 compatibility: "cline, claude, opencode, amp, codex, gemini, cursor, pi"
 hint: "Use for every non-trivial AI-assisted task to stay accountable for architecture, security, and outcomes"
@@ -30,7 +30,7 @@ Use this skill for **every non-trivial AI-assisted task**:
 - Refactors with architectural impact
 - Security-sensitive changes
 - Production deployments and operational work
-- Learning a unfamiliar part of the codebase
+- Learning an unfamiliar part of the codebase
 
 Skip for trivial edits (typos, comment fixes, one-line changes with obvious behavior).
 
@@ -62,7 +62,8 @@ Use `implementation-logger` and `qmd-knowledge` for durable recording. Use `quiz
 
 ## The 8-Step Workflow
 
-For every AI-assisted task, follow this sequence:
+For every non-trivial AI-assisted task, follow this sequence. Companion skills are optional aids, not automatic
+orchestration: load one when it is available and useful for the current step; otherwise follow the step directly.
 
 ### 1. Define behavior and constraints
 
@@ -95,6 +96,7 @@ Never ship on "it compiled" or "the agent said it works."
 ### 6. Document what was learned
 
 Capture deviations from plan, surprises, and durable lessons for future sessions.
+Do not persist secrets, credentials, customer data, or sensitive incident details in logs or knowledge stores.
 
 **Companion skills**: `implementation-logger`, `qmd-knowledge`
 
@@ -102,13 +104,14 @@ Capture deviations from plan, surprises, and durable lessons for future sessions
 
 Read the diff. Run the app or tests yourself. Confirm behavior matches intent.
 
-**Companion skills**: `code-review`, `code-quality-review`, `slop`
+**Companion skills**: `slop`, `code-review`, `code-quality-review`, `pr-review`, `commit-atomic`
 
 ### 8. Own deployment and maintenance
 
 Take responsibility for rollout, monitoring, rollback plan, and follow-up fixes.
 
-**Companion skills**: `draft-pull-request`, `commit-atomic`, `pr-review`
+`draft-pull-request` can prepare the change for review, but no generic skill replaces deployment-specific checks or
+human ownership.
 
 ## Senior AI Engineer Dimensions
 
@@ -134,17 +137,19 @@ Broaden beyond "someone who writes code." Product thinking, UX judgment, and go-
 
 ## Full Quality Pipeline
 
-Accountable engineering wraps the discovery and review skills into one accountable loop:
+Accountable engineering maps discovery and review skills onto the eight-step workflow. It does not invoke them
+automatically:
 
 ```text
 accountable-engineering (this skill — meta workflow)
-  ├─ 1. blindspot-pass / context-discovery / spec-interview
-  ├─ 2. implementation-logger (during work)
-  ├─ 3. slop (pre-review cleanup)
-  ├─ 4. code-review (conventions + intent)
-  ├─ 5. code-quality-review (structural audit, when needed)
-  ├─ 6. pr-review → commit-atomic
-  └─ 7. quiz-me (verify you understand the change)
+  ├─ 1. define constraints
+  ├─ 2. blindspot-pass / context-discovery / spec-interview
+  ├─ 3. review architecture and key decisions
+  ├─ 4. implementation-logger / tdd
+  ├─ 5. run targeted tests and inspect edge cases
+  ├─ 6. implementation-logger / qmd-knowledge
+  ├─ 7. slop → code-review → code-quality-review → pr-review → commit-atomic
+  └─ 8. own rollout, monitoring, rollback, and maintenance
 ```
 
 ## Agent Instructions
@@ -170,7 +175,7 @@ You have practiced accountable engineering when:
 ## References
 
 - [Addy Osmani — The Future of Software Engineering with AI](https://www.youtube.com/watch?v=2fyPnxKu8ZM)
-- `skills/blindspot-pass/` — find unknowns before starting
-- `skills/implementation-logger/` — track deviations during work
-- `configs/fable-guide.md` — discovery techniques and staying in the loop
-- `configs/implementation-notes-guidelines.md` — where to route durable notes
+- `blindspot-pass` — find unknowns before starting
+- `implementation-logger` — track deviations during work
+- `~/.ai-tools/fable-guide.md` — discovery techniques and staying in the loop
+- `~/.ai-tools/implementation-notes.md` — where to route durable notes

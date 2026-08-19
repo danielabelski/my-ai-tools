@@ -4,8 +4,8 @@ export const description =
 	"Exposes every my-ai-tools workflow as an Amp skill, including code review, planning, documentation, testing, and security workflows.";
 
 const SKILLS = [
-	"adr",
 	"accountable-engineering",
+	"adr",
 	"blindspot-pass",
 	"capability-experiments",
 	"code-quality-review",

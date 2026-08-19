@@ -25,6 +25,7 @@ After publishing, reload Amp plugins and verify a bundled skill:
 
 ```bash
 amp skill info my-ai-tools-skills:code-review
+amp skill info my-ai-tools-skills:accountable-engineering
 ```
 
 ## Keeping the bundle synchronized
