@@ -197,16 +197,8 @@ Addy Osmani (Chrome, DevTools, Core Web Vitals, AI developer experience) argues 
 
 ### Practical Workflow (Captured as a Skill)
 
-Repo skill: `skills/accountable-engineering/` — disciplined AI-assisted engineering vs vibe coding.
-
-1. Define expected behavior and constraints
-2. Ask the agent to propose an approach before writing code
-3. Review architecture and key decisions
-4. Implement in small steps
-5. Run tests and inspect edge cases
-6. Document what was learned
-7. Review the final result yourself
-8. Own deployment and maintenance
+The [`accountable-engineering` skill](../skills/accountable-engineering/SKILL.md) turns these lessons into one
+authoritative eight-step workflow with explicit completion criteria from definition through operational ownership.
 
 ### Senior AI Engineer Profile
 

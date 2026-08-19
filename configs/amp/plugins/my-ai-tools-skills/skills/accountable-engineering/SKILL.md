@@ -1,181 +1,100 @@
 ---
 name: "accountable-engineering"
-description: "Guides disciplined AI-assisted engineering that avoids cognitive surrender and keeps humans accountable. Use for non-trivial implementation, architecture, security, and operational tasks."
+description: "Guides disciplined AI-assisted engineering that avoids cognitive surrender and keeps humans accountable. Use for non-trivial implementation, architecture, security, or operational tasks."
 license: "MIT"
 compatibility: "cline, claude, opencode, amp, codex, gemini, cursor, pi"
-hint: "Use for every non-trivial AI-assisted task to stay accountable for architecture, security, and outcomes"
+hint: "Use for non-trivial AI-assisted implementation, architecture, security, or operational work"
 user-invocable: true
 ---
 
 # Accountable Engineering
 
-## Core Idea
+Accountable engineering means using AI for leverage while keeping architectural, security, product, and operational
+decisions understandable and human-owned. Follow this workflow for every non-trivial AI-assisted task. Apply each step
+directly, loading a named companion skill only when its stated branch applies. This prevents cognitive surrender:
+accepting generated decisions that nobody can independently explain.
 
-AI increases how much software people can build. It does not remove the need for engineering judgment.
-
-The valuable engineer is not someone who writes code fastest. They are an **accountable system builder** who:
-
-- Understands the problem and constraints
-- Uses AI effectively without surrendering judgment
-- Makes and owns architectural, security, and product decisions
-- Takes responsibility for correctness, deployment, and maintenance
-
-**Source**: Addy Osmani on the future of software engineering with AI ([YouTube](https://www.youtube.com/watch?v=2fyPnxKu8ZM)).
-
-## When to Use
-
-Use this skill for **every non-trivial AI-assisted task**:
-
-- New features or integrations
-- Refactors with architectural impact
-- Security-sensitive changes
-- Production deployments and operational work
-- Learning an unfamiliar part of the codebase
-
-Skip for trivial edits (typos, comment fixes, one-line changes with obvious behavior).
-
-## Cognitive Surrender
-
-**Cognitive surrender** happens when you accept AI-generated solutions without understanding the important decisions behind them.
-
-You do not need to inspect every line. You **must** understand:
-
-- Major architectural choices
-- Security and data-handling decisions
-- Business logic and user-impact trade-offs
-- Operational constraints (cost, reliability, monitoring)
-
-If you cannot explain why a decision was made, you have not finished the task.
-
-## Mutual Amplification
-
-The goal is not faster output alone. It is a better developer-agent feedback loop:
-
-| Agent responsibility | Developer responsibility |
-| -------------------- | ------------------------ |
-| Record decisions, discoveries, and lessons | Review and internalize those lessons |
-| Propose approaches before coding | Challenge weak assumptions |
-| Implement in small verifiable steps | Verify edge cases and failure modes |
-| Document what was learned | Own deployment and maintenance |
-
-Use `implementation-logger` and `qmd-knowledge` for durable recording. Use `quiz-me` to verify your understanding.
-
-## The 8-Step Workflow
-
-For every non-trivial AI-assisted task, follow this sequence. Companion skills are optional aids, not automatic
-orchestration: load one when it is available and useful for the current step; otherwise follow the step directly.
+## Workflow
 
 ### 1. Define behavior and constraints
 
-State expected behavior, non-goals, security boundaries, performance expectations, and verification criteria before any code is written.
+Write the expected behavior, non-goals, security boundaries, performance expectations, and verification criteria before
+editing code.
+
+**Complete when**: Each requested behavior has a checkable outcome, and every known constraint or non-goal is explicit.
 
 ### 2. Propose approach before implementation
 
-Ask the agent to propose an approach — not code yet. Review trade-offs, risks, and alternatives.
+Inspect the relevant code and propose the smallest approach that fits its existing boundaries. Include data flow,
+integration points, failure handling, meaningful alternatives, and unanswered questions.
 
-**Companion skills**: `blindspot-pass`, `spec-interview`, `context-discovery`
+Load `blindspot-pass` for hidden gotchas, `spec-interview` when requirements can change the design, or
+`context-discovery` when the behavior spans multiple modules or tools.
+
+**Complete when**: The proposal accounts for every affected boundary and identifies every decision that could change
+the implementation.
 
 ### 3. Review architecture and key decisions
 
-Approve or redirect major decisions: data flow, integration points, failure handling, rollout strategy.
+Present material architectural, security, product, and rollout choices for review. State a recommendation and its
+trade-offs for each unresolved choice.
 
-Do not proceed until you can explain the approach to a teammate.
+**Complete when**: The user has approved or explicitly delegated every material choice, and the approach can be
+explained without relying on generated code.
 
 ### 4. Implement in small steps
 
-Let the agent implement incrementally. Each step should be small enough to review and test independently.
+Implement the smallest independently verifiable increment, then inspect its diff and run its targeted check before
+continuing.
 
-**Companion skills**: `implementation-logger`, `tdd`
+Load `tdd` when behavior can be expressed as a failing test. Load `implementation-logger` when repository reality
+forces a material deviation from the approved approach.
+
+**Complete when**: Every increment is necessary for the stated behavior, reviewable in isolation, and covered by a
+targeted check.
 
 ### 5. Run tests and inspect edge cases
 
-Verify happy path, failure paths, regressions, and operational concerns (logs, metrics, cost).
+Exercise the happy path, relevant failure paths, regressions, and operational concerns such as logs, metrics, and cost.
+Record the exact commands and decisive results.
 
-Never ship on "it compiled" or "the agent said it works."
+**Complete when**: Every verification criterion from step 1 has evidence, and all failures are fixed or reported as
+explicit blockers.
 
 ### 6. Document what was learned
 
-Capture deviations from plan, surprises, and durable lessons for future sessions.
-Do not persist secrets, credentials, customer data, or sensitive incident details in logs or knowledge stores.
+Capture material deviations, surprises, and reusable lessons. Read `~/.ai-tools/implementation-notes.md` when deciding
+whether a lesson belongs in project knowledge, a handoff, or temporary session notes. Record only non-sensitive
+rationale; omit secrets, credentials, customer data, and sensitive incident details.
 
-**Companion skills**: `implementation-logger`, `qmd-knowledge`
+Load `qmd-knowledge` only for a durable project lesson that future work should retrieve.
+
+**Complete when**: Every material deviation is represented in the final explanation, and each durable lesson has one
+appropriate destination.
 
 ### 7. Review the final result yourself
 
-Read the diff. Run the app or tests yourself. Confirm behavior matches intent.
+Read every changed file against the behavior and constraints from step 1. Resolve correctness, security, test,
+documentation, and maintainability findings before declaring the task complete.
 
-**Companion skills**: `slop`, `code-review`, `code-quality-review`, `pr-review`, `commit-atomic`
+Load `slop` for AI-generated clutter, `code-review` for conventions and intent, `code-quality-review` for structural
+risk, `pr-review` when review comments exist, `commit-atomic` when commits are requested, or `quiz-me` when the user
+wants to verify their understanding.
+
+**Complete when**: Every changed file is accounted for, every finding is resolved or disclosed, and verification is
+current after the final edit.
 
 ### 8. Own deployment and maintenance
 
-Take responsibility for rollout, monitoring, rollback plan, and follow-up fixes.
+State the rollout owner, monitoring signals, rollback conditions, and follow-up obligations. If deployment is outside
+the task, report these as remaining operational work.
 
-`draft-pull-request` can prepare the change for review, but no generic skill replaces deployment-specific checks or
-human ownership.
+Load `draft-pull-request` when the reviewed change needs a PR, while retaining deployment-specific checks and human
+ownership.
 
-## Senior AI Engineer Dimensions
+**Complete when**: The responsible person can explain how the change will be released, observed, reversed, and
+maintained—or those obligations are clearly handed off.
 
-A strong AI engineer in this environment combines:
-
-1. **Technical depth** — RAG, agents, evaluation, deployment, observability
-2. **AI leverage** — use coding agents, but verify their work
-3. **Product sense** — understand who benefits and what success means
-4. **Operational ownership** — reliability, cost, security, monitoring
-5. **Communication** — explain trade-offs to technical and non-technical audiences
-
-Broaden beyond "someone who writes code." Product thinking, UX judgment, and go-to-market awareness increasingly matter.
-
-## Vibe Coding vs Disciplined Engineering
-
-| Vibe coding | Disciplined AI-assisted engineering |
-| ----------- | ----------------------------------- |
-| Prompt → accept output | Define constraints → propose → review → implement |
-| Skip architecture review | Understand major decisions before merging |
-| Trust without verification | Test edge cases and failure modes |
-| Agent owns the outcome | You own deployment and maintenance |
-| No learning captured | Record lessons for the next session |
-
-## Full Quality Pipeline
-
-Accountable engineering maps discovery and review skills onto the eight-step workflow. It does not invoke them
-automatically:
-
-```text
-accountable-engineering (this skill — meta workflow)
-  ├─ 1. define constraints
-  ├─ 2. blindspot-pass / context-discovery / spec-interview
-  ├─ 3. review architecture and key decisions
-  ├─ 4. implementation-logger / tdd
-  ├─ 5. run targeted tests and inspect edge cases
-  ├─ 6. implementation-logger / qmd-knowledge
-  ├─ 7. slop → code-review → code-quality-review → pr-review → commit-atomic
-  └─ 8. own rollout, monitoring, rollback, and maintenance
-```
-
-## Agent Instructions
-
-When this skill is active:
-
-1. **Propose before coding** on non-trivial tasks unless the user explicitly asks for immediate implementation.
-2. **Surface decisions** — flag architectural, security, and product trade-offs explicitly.
-3. **Record learnings** — log deviations and surprises; offer to persist durable notes via `qmd-knowledge`.
-4. **Verify, don't claim** — run tests and show evidence; avoid "should work" language.
-5. **Prompt ownership** — remind the user to review key decisions and own rollout when appropriate.
-
-## Success Criteria
-
-You have practiced accountable engineering when:
-
-- You can explain every major decision in the change
-- Tests and verification cover edge cases, not just the happy path
-- Learnings are recorded for future sessions
-- You would confidently own production issues from this change
-- The outcome is better engineering, not just faster typing
-
-## References
+## Source
 
 - [Addy Osmani — The Future of Software Engineering with AI](https://www.youtube.com/watch?v=2fyPnxKu8ZM)
-- `blindspot-pass` — find unknowns before starting
-- `implementation-logger` — track deviations during work
-- `~/.ai-tools/fable-guide.md` — discovery techniques and staying in the loop
-- `~/.ai-tools/implementation-notes.md` — where to route durable notes

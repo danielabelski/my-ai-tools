@@ -5,7 +5,8 @@
 Code is communication between humans. Design for change, not perfection. Optimize for readability and simplicity.
 
 See @~/.ai-tools/fable-guide.md for working with next-generation AI models.
-See @~/.agents/skills/accountable-engineering/SKILL.md for disciplined AI-assisted engineering (own outcomes, avoid cognitive surrender).
+For non-trivial AI-assisted implementation, architecture, security, or operational work, read
+@~/.agents/skills/accountable-engineering/SKILL.md and follow its accountable workflow.
 
 ## AI Tool Session Management
 

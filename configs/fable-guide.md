@@ -219,26 +219,10 @@ The goal isn't to disconnect—it's to work at a higher level of abstraction whi
 
 ### Accountable Engineering (Addy Osmani)
 
-AI increases how much software people can build. It does not remove accountability for outcomes.
-
-**Avoid cognitive surrender**: accepting AI output without understanding major architectural, security, and business decisions.
-
-**Mutual amplification**: the agent records decisions and lessons; you review and internalize them. Faster output alone is not the goal—a better developer-agent feedback loop is.
-
-For every non-trivial AI-assisted task:
-
-1. Define behavior and constraints
-2. Propose approach before implementation
-3. Review architecture and key decisions
-4. Implement in small steps
-5. Run tests and inspect edge cases
-6. Document what was learned
-7. Review the final result yourself
-8. Own deployment and maintenance
-
-That is disciplined AI-assisted engineering—not vibe coding.
-
-See @~/.agents/skills/accountable-engineering/SKILL.md for the full workflow, anti-patterns, and integration with discovery and review skills.
+AI increases how much software people can build without transferring accountability for outcomes. For non-trivial
+AI-assisted implementation, architecture, security, or operational work, read
+@~/.agents/skills/accountable-engineering/SKILL.md and use its checkable workflow to keep decisions understandable,
+verification evidenced, and rollout human-owned.
 
 ## Practical Examples
 
