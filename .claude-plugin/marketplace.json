@@ -8,6 +8,17 @@
 	},
 	"plugins": [
 		{
+			"name": "accountable-engineering",
+			"description": "Guides disciplined AI-assisted engineering that avoids cognitive surrender and keeps humans accountable. Use for non-trivial implementation, architecture, security, or operational tasks.",
+			"version": "1.0.0",
+			"author": {
+				"name": "Dung Huynh Duc",
+				"email": "dung@productsway.com"
+			},
+			"source": "./skills/accountable-engineering",
+			"category": "productivity"
+		},
+		{
 			"name": "adr",
 			"description": "Manages Architecture Decision Records (ADR) for tracking important architectural decisions. Initialize, create, list, search, and view ADRs.",
 			"version": "1.0.0",

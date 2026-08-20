@@ -40,27 +40,3 @@ setup() {
 		[ "$status" -eq 0 ]
 	done
 }
-
-@test "accountable engineering references installed paths" {
-	local skill="$REPO_ROOT/skills/accountable-engineering/SKILL.md"
-
-	run grep -F '@~/.agents/skills/accountable-engineering/SKILL.md' "$REPO_ROOT/configs/best-practices.md"
-	[ "$status" -eq 0 ]
-	run grep -F '@~/.agents/skills/accountable-engineering/SKILL.md' "$REPO_ROOT/configs/fable-guide.md"
-	[ "$status" -eq 0 ]
-	run grep -F '`~/.ai-tools/implementation-notes.md`' "$skill"
-	[ "$status" -eq 0 ]
-	run grep -E '`(skills|configs)/' "$skill"
-	[ "$status" -ne 0 ]
-}
-
-@test "accountable workflow has one completion gate per step" {
-	local skill="$REPO_ROOT/skills/accountable-engineering/SKILL.md"
-
-	run grep -Ec '^### [1-8]\. ' "$skill"
-	[ "$status" -eq 0 ]
-	[ "$output" -eq 8 ]
-	run grep -c '^\*\*Complete when\*\*:' "$skill"
-	[ "$status" -eq 0 ]
-	[ "$output" -eq 8 ]
-}

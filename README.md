@@ -551,7 +551,7 @@ npx skills add jellydn/my-ai-tools --yes --global --agent claude-code
 # Or install interactively (select which skills to install)
 npx skills add jellydn/my-ai-tools --global --agent claude-code
 
-# Available skills: prd, ralph, qmd-knowledge, codemap, adr, handoffs, pickup, pr-review, slop, tdd, code-quality-review, commit-atomic, draft-pull-request, docs-update, llm-wiki, plannotator-setup-goal, portless-local, security-audit, tmux, blindspot-pass, implementation-logger, quiz-me, spec-interview, capability-experiments, code-review, context-discovery, doc-search, git-context, orchestrating-fusion
+# Available skills: accountable-engineering, prd, ralph, qmd-knowledge, codemap, adr, handoffs, pickup, pr-review, slop, tdd, code-quality-review, commit-atomic, draft-pull-request, docs-update, llm-wiki, plannotator-setup-goal, portless-local, security-audit, tmux, blindspot-pass, implementation-logger, quiz-me, spec-interview, capability-experiments, code-review, context-discovery, doc-search, git-context, orchestrating-fusion
 # Skills are installed to ~/.agents/skills/ with symlinks in ~/.claude/skills/
 ```
 
@@ -789,6 +789,7 @@ Located in [`configs/claude/agents/`](configs/claude/agents/):
 
 **Local Marketplace Plugins** - Installed by `cli.sh` from [`skills/`](skills/):
 
+- `accountable-engineering` - Checkpoint-driven workflow for accountable AI-assisted implementation, architecture, security, and operational work
 - `adr` - Architecture Decision Records
 - `code-review` - Two-axis diff review (Conventions + Intent) with parallel sub-agents — checks bash idioms, Tidy First practices, and whether the change does what it claims
 - `codemap` - Parallel codebase analysis producing structured documentation
@@ -1280,7 +1281,7 @@ Custom Amp agent modes live in [`configs/amp/plugins/`](configs/amp/plugins/) an
 
 The [`my-ai-tools-skills`](configs/amp/plugins/my-ai-tools-skills/) directory plugin also bundles every repository
 skill for personal Amp installation. Amp exposes them with qualified names such as
-`my-ai-tools-skills:code-review`.
+`my-ai-tools-skills:accountable-engineering` and `my-ai-tools-skills:code-review`.
 
 See [`configs/amp/AGENTS.md`](configs/amp/AGENTS.md) for agent guidelines.
 
