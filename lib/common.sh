@@ -292,40 +292,46 @@ execute_quoted() {
 	fi
 }
 
-# Download and verify script with checksum (if available)
-# Usage: download_and_verify_script "url" "expected_sha256" "description"
-download_and_verify_script() {
+# Download and verify a file with SHA-256 (if available)
+# Usage: download_and_verify_file "url" "expected_sha256" "description"
+download_and_verify_file() {
 	local url="$1"
 	local expected_sha256="$2"
 	local description="$3"
 
 	local tmpdir
 	tmpdir=$(get_temp_dir)
-	local temp_script
-	temp_script="${tmpdir}/install-$(date +%s)-$$"
+	local temp_file
+	temp_file="${tmpdir}/download-$(date +%s)-$$"
 
 	log_info "Downloading $description..."
-	if ! curl -fsSL "$url" -o "$temp_script" 2>/dev/null; then
+	if ! execute_quoted curl -fsSL "$url" -o "$temp_file" 2>/dev/null; then
 		log_error "Failed to download $description"
 		return 1
 	fi
 
-	chmod +x "$temp_script"
-
 	if [ -n "$expected_sha256" ]; then
 		local actual_sha256
-		actual_sha256=$(sha256sum "$temp_script" 2>/dev/null | cut -d' ' -f1)
+		if command -v sha256sum &>/dev/null; then
+			actual_sha256=$(sha256sum "$temp_file" 2>/dev/null | cut -d' ' -f1)
+		elif command -v shasum &>/dev/null; then
+			actual_sha256=$(shasum -a 256 "$temp_file" 2>/dev/null | cut -d' ' -f1)
+		else
+			log_error "SHA-256 verification requires sha256sum or shasum"
+			execute_quoted rm -f "$temp_file"
+			return 1
+		fi
 		if [ "$actual_sha256" != "$expected_sha256" ]; then
 			log_error "Checksum verification failed for $description"
 			log_error "Expected: $expected_sha256"
 			log_error "Actual: $actual_sha256"
-			rm -f "$temp_script"
+			execute_quoted rm -f "$temp_file"
 			return 1
 		fi
 		log_success "Checksum verified for $description"
 	fi
 
-	echo "$temp_script"
+	echo "$temp_file"
 }
 
 # Execute external installer script with verification
@@ -353,14 +359,15 @@ execute_installer() {
 	export TMPDIR="$tmp_dir"
 
 	local temp_script
-	temp_script=$(download_and_verify_script "$url" "$expected_sha256" "$description")
+	temp_script=$(download_and_verify_file "$url" "$expected_sha256" "$description")
 	if [ -z "$temp_script" ]; then
 		return 1
 	fi
 
+	execute_quoted chmod +x "$temp_script"
 	"$temp_script" "$@"
 	local result=$?
-	rm -f "$temp_script"
+	execute_quoted rm -f "$temp_script"
 	return $result
 }
 
