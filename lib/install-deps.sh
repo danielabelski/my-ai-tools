@@ -76,10 +76,28 @@ handle_bun_installation() {
 	fi
 }
 
+# Link a binary into $HOME/.local/bin so GUI-spawned tools (opencode,
+# Claude Code) find it without the login-shell PATH.
+_link_binary_on_local_bin() {
+	local src_bin="$1"
+	local link_name="$2"
+	if [ -z "$src_bin" ] || [ ! -e "$src_bin" ]; then
+		return 0
+	fi
+	ensure_dir_on_path "$HOME/.local/bin"
+	execute_quoted mkdir -p "$HOME/.local/bin"
+	local dest_bin="$HOME/.local/bin/$link_name"
+	if [ "$src_bin" != "$dest_bin" ] && { [ ! -e "$dest_bin" ] || [ -L "$dest_bin" ]; }; then
+		execute_quoted ln -sf "$src_bin" "$HOME/.local/bin/$link_name"
+	fi
+}
+
 # ─── qmd installation ──────────────────────────────────────────────
 
 install_qmd_now() {
 	if command -v qmd &>/dev/null; then
+		_link_binary_on_local_bin "$(command -v qmd)" "qmd"
+		_link_binary_on_local_bin "$(command -v node 2>/dev/null)" "node"
 		local qmd_version
 		qmd_version=$(qmd --version 2>/dev/null || echo "version unknown")
 		log_success "qmd already installed ($qmd_version)"
@@ -106,6 +124,8 @@ install_qmd_now() {
 		if command -v bun &>/dev/null; then
 			ensure_dir_on_path "$(bun pm bin -g 2>/dev/null)"
 		fi
+		_link_binary_on_local_bin "$(command -v qmd 2>/dev/null)" "qmd"
+		_link_binary_on_local_bin "$(command -v node 2>/dev/null)" "node"
 		local qmd_version
 		qmd_version=$(qmd --version 2>/dev/null || echo "version unknown")
 		log_success "qmd installed successfully ($qmd_version)"

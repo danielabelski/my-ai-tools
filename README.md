@@ -1866,12 +1866,12 @@ Located in [`configs/pi/`](configs/pi/):
 - [`settings.json`](configs/pi/settings.json) - Global settings with package registrations
 - [`models.json`](configs/pi/models.json) - Provider and model definitions (google-antigravity, ollama)
 
-The installer copies the repo-managed files `configs/pi/settings.json` and `configs/pi/models.json` to `~/.pi/agent/settings.json` and `~/.pi/agent/models.json` respectively. The default settings configure `cursor` as the default provider with `auto` as the default model (OmniRoute `paid`/`free`/`premium` remain available in `enabledModels`). You can inspect or edit them at `~/.pi/agent/settings.json` after installation.
+The installer copies the repo-managed files `configs/pi/settings.json` and `configs/pi/models.json` to `~/.pi/agent/settings.json` and `~/.pi/agent/models.json` respectively. The default settings configure `commandcode` as the default provider with `deepseek/deepseek-v4-pro` as the default model (OmniRoute `paid`/`free`/`premium` remain available in `enabledModels`). You can inspect or edit them at `~/.pi/agent/settings.json` after installation.
 
 **Key Settings:**
 
-- **Default Model**: `auto`
-- **Default Provider**: `cursor`
+- **Default Model**: `deepseek/deepseek-v4-pro`
+- **Default Provider**: `commandcode`
 - **Default Thinking Level**: `high`
 - **Theme**: `kanagawa`
 - **Permission Level**: `high`
@@ -1960,12 +1960,13 @@ Pi is configured with multi-provider model access (`settings.json` `enabledModel
 
 | Provider           | Models                                                                                                                                             |
 | ------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------- |
+| commandcode        | `deepseek/deepseek-v4-pro` (default)                                                                                                              |
 | cursor             | `auto`, `composer-2-5`, `grok-4.5`                                                                                                                 |
 | openai-codex       | `gpt-5.4-mini`, `gpt-5.5`, `gpt-5.6-luna`, `gpt-5.6-sol`, `gpt-5.6-terra`                                                                          |
-| clinepass          | `deepseek-v4-pro` (default), `deepseek-v4-flash`, `kimi-k2.7-code`, `glm-5.2`, `kimi-k2.6`, `kimi-k3`, `minimax-m3`, `qwen3.7-max`, `qwen3.7-plus` |
 | google-antigravity | `gemini-3.5-flash`, `gemini-3-pro`, `claude-opus-4-6`                                                                                              |
-| commandcode        | `deepseek/deepseek-v4-pro`, `MiniMaxAI/MiniMax-M3`, `poolside/laguna-s-2.1-free`                                                                   |
-| qw                 | `deepseek-v4-pro`, `glm-5.2`, `qwen3.8-max-preview`                                                                                                |
+| omniroute          | `paid`, `free`, `premium`                                                                                                                         |
+| openrouter         | `openrouter/free`, `deepseek/deepseek-v4-flash-0731`, `~deepseek/deepseek-v4-flash-latest`                                                      |
+| xai                | `grok-4.6`, `grok-4.5`                                                                                                                             |
 
 ### Pi Antigravity Rotator
 
@@ -3042,7 +3043,7 @@ Review the dry-run output, then install the tool and configuration:
 DeepSeek Harness uses one user root at `${DSH_HOME:-$HOME/.dsh}`. It does not use XDG config paths. This repository manages:
 
 - [`AGENTS.md`](configs/deepseek-harness/AGENTS.md) — user-global agent instructions
-- [`settings.yaml`](configs/deepseek-harness/settings.yaml) — native DeepSeek provider defaults using the `DEEPSEEK_API_KEY` environment variable
+- [`settings.yaml`](configs/deepseek-harness/settings.yaml) — native DeepSeek provider defaults using the `DEEPSEEK_API_KEY` environment variable with thinking mode and high reasoning effort enabled
 - [`cordis.patch.yml`](configs/deepseek-harness/cordis.patch.yml) — Cordis plugin entries for context7, sequential-thinking, qmd, fff, sem, and ctx MCP tools
 
 `./generate.sh` exports only these managed files. It intentionally excludes `.credentials.yaml`, `.env`, `.anonymous-user-id`, sessions, storage, attachments, profile dependencies, and other runtime state. Never commit Harness credentials or session data.

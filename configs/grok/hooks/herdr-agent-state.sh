@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/sh
 # installed by herdr
 # managed by herdr; reinstalling or updating the integration overwrites this file.
 # add custom hooks beside this file instead of editing it.
