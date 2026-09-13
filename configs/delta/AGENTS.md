@@ -6,7 +6,7 @@ Always talk in ASD-STE100 Simplified Technical English. Always read CONTEXT.md f
 
 ## Session Management with tmux
 
-Run dev servers, tests, and interactive CLIs inside tmux with the **current directory name as the session name** for easy debugging:
+Use tmux for long-running development servers, watch processes, and interactive CLIs. Use the **current directory name as the session name** for easy debugging:
 
 ```bash
 SESSION=$(basename "$PWD")
@@ -24,9 +24,9 @@ tmux capture-pane -p -t "$SESSION" -S -20  # check output
 
 ## 🔧 AI Tool Guidelines
 
-- Use the fff MCP tools for all file search operations instead of default tools.
-- Use the sem MCP tools for semantic version control and git operations.
-- When using bash commands for file/content search, prefer `fd` (fdfind) and `rg` (ripgrep) over standard `find` and `grep` for better performance and git-awareness.
+- Prefer the fff MCP tools for file search operations when available; otherwise use the environment's native tools.
+- Prefer the sem MCP tools for semantic version control and git operations when available; otherwise use the environment's native tools.
+- When using shell commands for file or content search, prefer `fd` (fdfind) and `rg` (ripgrep) over standard `find` and `grep` for better performance and git awareness.
 
 ## Token Efficiency
 
@@ -36,15 +36,27 @@ tmux capture-pane -p -t "$SESSION" -S -20  # check output
 - Prefer `codebase-memory-mcp` graph tools for structural code discovery when available.
 - Load supplemental guidance only when the task requires it. Start a fresh session when switching to unrelated work.
 
+## Decision and Safety
+
+- Follow explicit user requests and the most specific applicable project instructions.
+- Inspect relevant context, conventions, and existing tests before changing files.
+- Prefer the simplest solution that fully meets the requirement. Avoid speculative abstractions and unrelated refactoring.
+- Preserve existing behaviour unless a change is required; fix root causes rather than symptoms.
+- Clearly distinguish verified facts from assumptions.
+- Ask before destructive or irreversible operations.
+- Do not expose secrets, credentials, personal data, or sensitive project details in responses, logs, or files.
+
+## Verification
+
+- Run the most relevant available checks after changes, such as tests, typecheck, lint, formatting, or build.
+- Report what was verified and identify checks that were not run.
+
 ## 📋 General Practices
 
 - Read `~/.ai-tools/best-practices.md` only when the repository lacks equivalent guidance or the task needs its detailed workflow.
 - Read `~/.ai-tools/MEMORY.md` and `~/.ai-tools/agent-memory.md` only when deciding whether or where to persist a learning.
 - Read `~/.ai-tools/git-guidelines.md` before destructive or history-changing git operations.
-- Ask before destructive operations — don't guess safety
-- Code is communication — prefer clarity and simplicity
-- Self-documenting code through meaningful names and structure
-- Modular design that can evolve
-- Comments explain why, not what
-- Run typecheck, lint and biome on js/ts file changes after finish.
-- Prefer to use Bun to run scripts if possible, otherwise use tsx to run ts files.
+- Prefer clear names and simple structure. Comments should explain why, not what.
+- Keep designs modular where change is likely, without overengineering speculative needs.
+- For JavaScript or TypeScript changes, run the relevant typecheck, lint, formatting, and tests. Use Biome when the project configures it.
+- Prefer Bun when the project supports it; otherwise use the project's configured runtime and package manager.
