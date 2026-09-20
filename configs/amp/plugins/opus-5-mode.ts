@@ -5,7 +5,7 @@
 // @amp-agent-mode {"key":"claude-opus-xhi","label":"Claude Opus xhi"}
 // @amp-agent-mode {"key":"claude-opus-max","label":"Claude Opus max"}
 
-import type { PluginAPI } from '@ampcode/plugin'
+import type { PluginAPI } from "@ampcode/plugin";
 
 const OPUS_AGENT_PROMPT = `
 You are pair programming with a user to solve their coding task. Your main goal is to follow the user's instructions and verify that the result works.
@@ -127,76 +127,76 @@ Example:
 When referencing files in your response, prefer "fluent" linking style. Do not show the user the actual URL, but instead use it to add links to relevant files or code snippets. Whenever you mention a file by name, you MUST link to it in this way.
 
 When linking a file, the URL should use \`file\` as the scheme, the absolute path as the path, and an optional fragment with the line range. Always URL-encode special characters in paths (spaces become \`%20\`, parentheses become \`%28\` and \`%29\`, etc.).
-`
+`;
 
 const SMART_TOOL_NAMES = [
-	'finder',
-	'shell_command',
-	'shell_command_status',
-	'create_file',
-	'edit_file',
-	'web_search',
-	'read_web_page',
-	'read_thread',
-	'find_thread',
-	'skill',
-	'oracle',
-	'librarian',
-	'Task',
-	'view_media',
-	'painter',
-	'read_mcp_resource',
-	'archive_current_thread',
-	'send_message_to_puck',
-	'mcp__*',
-] as const
+	"finder",
+	"shell_command",
+	"shell_command_status",
+	"create_file",
+	"edit_file",
+	"web_search",
+	"read_web_page",
+	"read_thread",
+	"find_thread",
+	"skill",
+	"oracle",
+	"librarian",
+	"Task",
+	"view_media",
+	"painter",
+	"read_mcp_resource",
+	"archive_current_thread",
+	"send_message_to_puck",
+	"mcp__*",
+] as const;
 
 export default function (amp: PluginAPI) {
 	if (!amp.experimental) {
-		amp.logger.log('Experimental plugin API is not available.')
-		return
+		amp.logger.log("Experimental plugin API is not available.");
+		return;
 	}
 
 	const agent = amp.experimental.createAgent({
-		name: 'claude-opus-5',
-		model: 'anthropic/claude-opus-5',
+		name: "claude-opus-5",
+		model: "anthropic/claude-opus-5",
 		instructions: OPUS_AGENT_PROMPT,
 		tools: SMART_TOOL_NAMES,
-		reasoningEffort: 'high',
-		display: { label: 'Claude Opus 5', color: '#d97757' },
-	})
+		reasoningEffort: "high",
+		display: { label: "Claude Opus 5", color: "#d97757" },
+	});
 
 	amp.experimental.registerAgentMode({
-		key: 'claude-opus-5',
-		label: 'Claude Opus 5',
-		description: 'Claude Opus 5 at high',
-		color: '#d97757',
+		key: "claude-opus-5",
+		label: "Claude Opus 5",
+		description: "Claude Opus 5 at high",
+		color: "#d97757",
 		agent: agent.definition,
-	})
+	});
 
 	const extraEffortLevels = [
-		['low', 'low'],
-		['medium', 'med'],
-		['xhigh', 'xhi'],
-		['max', 'max'],
-	] as const
+		["low", "low"],
+		["medium", "med"],
+		["xhigh", "xhi"],
+		["max", "max"],
+	] as const;
 
 	for (const [level, short] of extraEffortLevels) {
 		const levelAgent = amp.experimental.createAgent({
 			name: `claude-opus-5-${level}`,
-			model: 'anthropic/claude-opus-5',
+			model: "anthropic/claude-opus-5",
 			instructions: OPUS_AGENT_PROMPT,
 			tools: SMART_TOOL_NAMES,
 			reasoningEffort: level,
-			display: { label: `Claude Opus ${short}`, color: '#fb923c' },
-		})
+			display: { label: `Claude Opus ${short}`, color: "#fb923c" },
+		});
 
 		amp.experimental.registerAgentMode({
 			key: `claude-opus-${short}`,
 			label: `Claude Opus ${short}`,
 			description: `Claude Opus 5 at ${level}`,
-			color: '#fb923c',
+			color: "#fb923c",
 			agent: levelAgent.definition,
-		})
+		});
 	}
 }
