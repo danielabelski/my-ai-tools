@@ -379,30 +379,43 @@ install_opencode() {
 	run_installer "OpenCode" "_run_opencode_install" "command -v opencode" ""
 }
 
+# True when stable OpenCode 2 (`opencode` v2.x) or the leftover beta `opencode2` binary is on PATH.
+_opencode_v2_installed() {
+	if command -v opencode2 >/dev/null 2>&1; then
+		return 0
+	fi
+	if command -v opencode >/dev/null 2>&1; then
+		case "$(opencode --version 2>/dev/null || true)" in
+		*v2.* | *V2.*) return 0 ;;
+		esac
+	fi
+	return 1
+}
+
 install_opencode2() {
 	_run_opencode2_install() {
-		if command -v opencode2 >/dev/null 2>&1; then
+		if _opencode_v2_installed; then
 			log_warning "OpenCode 2 is already installed"
-		else
-			local package_manager
-			if command -v bun >/dev/null 2>&1; then
-				package_manager="bun"
-			elif command -v npm >/dev/null 2>&1; then
-				package_manager="npm"
-			elif command -v pnpm >/dev/null 2>&1; then
-				package_manager="pnpm"
-			elif command -v yarn >/dev/null 2>&1; then
-				package_manager="yarn"
-			else
-				log_error "No supported package manager found for OpenCode 2 (need Bun, npm, pnpm, or Yarn)"
-				return 1
-			fi
+			return 0
+		fi
 
+		local package_manager=""
+		if command -v bun >/dev/null 2>&1; then
+			package_manager="bun"
+		elif command -v npm >/dev/null 2>&1; then
+			package_manager="npm"
+		elif command -v pnpm >/dev/null 2>&1; then
+			package_manager="pnpm"
+		elif command -v yarn >/dev/null 2>&1; then
+			package_manager="yarn"
+		fi
+
+		if [ -n "$package_manager" ]; then
 			if ! case "$package_manager" in
-				bun) execute "bun install -g --trust @opencode-ai/cli@next" ;;
-				npm) execute "npm install -g @opencode-ai/cli@next" ;;
-				pnpm) execute "pnpm add -g --allow-build=@opencode-ai/cli @opencode-ai/cli@next" ;;
-				yarn) execute "yarn global add @opencode-ai/cli@next" ;;
+				bun) execute "bun install -g --trust @opencode/cli" ;;
+				npm) execute "npm install -g @opencode/cli" ;;
+				pnpm) execute "pnpm add -g --allow-build=@opencode/cli @opencode/cli" ;;
+				yarn) execute "yarn global add @opencode/cli" ;;
 				esac then
 				log_error "OpenCode 2 installation failed"
 				return 1
@@ -422,18 +435,20 @@ install_opencode2() {
 				ensure_dir_on_path "$global_bin"
 				hash -r 2>/dev/null || true
 			fi
+		else
+			execute_installer "https://opencode.ai/v2/install" "" "OpenCode 2"
+		fi
 
-			if [ "$DRY_RUN" = true ]; then
-				log_info "[DRY RUN] Would install OpenCode 2 as opencode2"
-			elif ! command -v opencode2 >/dev/null 2>&1; then
-				log_error "OpenCode 2 installation completed but opencode2 is not on PATH"
-				return 1
-			else
-				log_success "OpenCode 2 installed as opencode2"
-			fi
+		if [ "$DRY_RUN" = true ]; then
+			log_info "[DRY RUN] Would install OpenCode 2 as opencode"
+		elif ! command -v opencode >/dev/null 2>&1 && ! command -v opencode2 >/dev/null 2>&1; then
+			log_error "OpenCode 2 installation completed but opencode is not on PATH"
+			return 1
+		else
+			log_success "OpenCode 2 installed as opencode"
 		fi
 	}
-	run_installer "OpenCode 2 (beta)" "_run_opencode2_install" "command -v opencode2" ""
+	run_installer "OpenCode 2" "_run_opencode2_install" "_opencode_v2_installed" "opencode --version 2>/dev/null || opencode2 --version 2>/dev/null || true"
 }
 
 # Usage: install_opencode_cursor

@@ -1,5 +1,5 @@
 #!/usr/bin/env bats
-# OpenCode 2 beta compatibility checks.
+# OpenCode 2 stable installer and config-copy checks.
 
 load helpers
 
@@ -16,16 +16,28 @@ LAUNCHER_CONFIG="$REPO_ROOT/configs/ai-launcher/config.json"
 	[ "$status" -eq 0 ]
 }
 
-@test "OpenCode 2 installer uses its separate beta binary and package" {
-	run grep -F 'command -v opencode2' "$INSTALL_SH"
+@test "OpenCode 2 installer uses the stable opencode binary and package" {
+	run grep -F '_opencode_v2_installed' "$INSTALL_SH"
 	[ "$status" -eq 0 ]
-	run grep -F '@opencode-ai/cli@next' "$INSTALL_SH"
+	run grep -F 'run_installer "OpenCode 2"' "$INSTALL_SH"
 	[ "$status" -eq 0 ]
-	run grep -F -- '--trust @opencode-ai/cli@next' "$INSTALL_SH"
+	if grep -F 'OpenCode 2 (beta)' "$INSTALL_SH"; then
+		echo "FAIL: OpenCode 2 installer is still labeled beta" >&2
+		return 1
+	fi
+	if grep -F '@opencode-ai/cli@next' "$INSTALL_SH"; then
+		echo "FAIL: OpenCode 2 installer still uses the beta @next package" >&2
+		return 1
+	fi
+	run grep -F '@opencode/cli' "$INSTALL_SH"
 	[ "$status" -eq 0 ]
-	run grep -F -- '--allow-build=@opencode-ai/cli @opencode-ai/cli@next' "$INSTALL_SH"
+	run grep -F -- '--trust @opencode/cli' "$INSTALL_SH"
 	[ "$status" -eq 0 ]
-	run grep -F 'yarn global add @opencode-ai/cli@next' "$INSTALL_SH"
+	run grep -F -- '--allow-build=@opencode/cli @opencode/cli' "$INSTALL_SH"
+	[ "$status" -eq 0 ]
+	run grep -F 'yarn global add @opencode/cli' "$INSTALL_SH"
+	[ "$status" -eq 0 ]
+	run grep -F 'https://opencode.ai/v2/install' "$INSTALL_SH"
 	[ "$status" -eq 0 ]
 	run grep -F 'ensure_dir_on_path "$global_bin"' "$INSTALL_SH"
 	[ "$status" -eq 0 ]
@@ -48,10 +60,14 @@ LAUNCHER_CONFIG="$REPO_ROOT/configs/ai-launcher/config.json"
 @test "OpenCode 2 installer reports a failed package install" {
 	local fake_bin="$BATS_TEST_TMPDIR/opencode2-fail-bin"
 	mkdir -p "$fake_bin"
+	printf '#!/bin/sh\nexit 17\n' >"$fake_bin/bun"
 	printf '#!/bin/sh\nexit 17\n' >"$fake_bin/npm"
-	chmod +x "$fake_bin/npm"
+	printf '#!/bin/sh\nexit 17\n' >"$fake_bin/pnpm"
+	printf '#!/bin/sh\nexit 17\n' >"$fake_bin/yarn"
+	chmod +x "$fake_bin/bun" "$fake_bin/npm" "$fake_bin/pnpm" "$fake_bin/yarn"
 
-	run env PATH="$fake_bin:/usr/bin:/bin" DRY_RUN=false YES_TO_ALL=true VERBOSE=false bash -c '
+	run env -i PATH="$fake_bin:/usr/bin:/bin" HOME="$HOME" TMPDIR="${TMPDIR:-/tmp}" TERM=dumb DRY_RUN=false YES_TO_ALL=true VERBOSE=false \
+		bash --noprofile --norc -c '
 		source "$1/cli.sh"
 		install_opencode2
 	' _ "$REPO_ROOT"
@@ -77,14 +93,16 @@ LAUNCHER_CONFIG="$REPO_ROOT/configs/ai-launcher/config.json"
 
 @test "AI launcher configures opencode tool" {
 	require_jq
+	run jq -e '[.tools[] | select(.name == "opencode")] | length == 1' "$LAUNCHER_CONFIG"
+	[ "$status" -eq 0 ]
 	run jq -e '[.tools[] | select(.name == "opencode")][0].command == "opencode"' "$LAUNCHER_CONFIG"
 	[ "$status" -eq 0 ]
 	run jq -r '[.tools[] | select(.name == "opencode")][0].promptCommand' "$LAUNCHER_CONFIG"
 	[ "$status" -eq 0 ]
 	[[ "$output" == "opencode run" ]]
-	run jq -e '.tools[] | select((.aliases // []) | index("o2")) | .command == "opencode"' "$LAUNCHER_CONFIG"
+	run jq -e '.tools[] | select(.name == "opencode") | (.aliases // []) | index("o2")' "$LAUNCHER_CONFIG"
 	[ "$status" -eq 0 ]
-	run jq -r '.tools[] | select((.aliases // []) | index("o2")) | .promptCommand' "$LAUNCHER_CONFIG"
+	run jq -r '.tools[] | select(.name == "opencode") | .description' "$LAUNCHER_CONFIG"
 	[ "$status" -eq 0 ]
-	[[ "$output" == "opencode run" ]]
+	[[ "$output" != *"beta"* ]]
 }

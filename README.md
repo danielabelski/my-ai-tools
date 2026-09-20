@@ -980,7 +980,7 @@ Local marketplace plugins are in [`skills/`](skills/).
 
 OpenAI-powered AI coding assistant. [Homepage](https://opencode.ai)
 
-OpenCode 2 is available as a beta alongside OpenCode 1. It installs as the separate `opencode2` command and reads the same global configuration directory, `~/.config/opencode/`. Existing V1 configuration is translated in memory, but V1 plugins do not work with V2; keep OpenCode 1 available until any plugins you rely on have been ported. See the [OpenCode 2 migration guide](https://opencode.ai/v2/docs/migrate-v1).
+OpenCode 2 is stable. It uses the `opencode` command and reads the same global configuration directory, `~/.config/opencode/`. OpenCode 1 and 2 are no longer installed side by side by default; the V2 installer replaces the V1 binary. A leftover beta `opencode2` binary still works. Existing V1 configuration is translated in memory, but V1 plugins do not run in V2. See the [OpenCode 2 migration guide](https://opencode.ai/v2/docs/migrate-v1).
 
 <details>
 <summary><strong>Installation & Configuration</strong></summary>
@@ -993,18 +993,20 @@ OpenCode 1:
 curl -fsSL https://opencode.ai/install | bash
 ```
 
-OpenCode 2 beta (side-by-side with V1):
+OpenCode 2 (replaces the V1 `opencode` binary):
 
 ```bash
-npm install -g @opencode-ai/cli@next
-# Or with Bun (the beta package needs its native postinstall trusted):
-bun install -g --trust @opencode-ai/cli@next
+curl -fsSL https://opencode.ai/v2/install | bash
+# Or with npm:
+npm install -g @opencode/cli
+# Or with Bun (the package needs its native postinstall trusted):
+bun install -g --trust @opencode/cli
 # Or with pnpm (allow the native postinstall explicitly):
-pnpm add -g --allow-build=@opencode-ai/cli @opencode-ai/cli@next
+pnpm add -g --allow-build=@opencode/cli @opencode/cli
 # Or with Yarn:
-yarn global add @opencode-ai/cli@next
+yarn global add @opencode/cli
 
-opencode2
+opencode
 ```
 
 ### Configuration
