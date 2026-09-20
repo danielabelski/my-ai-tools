@@ -651,15 +651,14 @@ prompt_yn() {
 		return 1
 	fi
 
-	# POSIX: no -n or -p on read. Print prompt separately, then read one byte
-	# from the terminal (dd is the portable way to read exactly one char).
+	# Read a full line. A one-byte read (dd/read -n 1) leaves the Enter key
+	# in stdin, so the next prompt_yn sees a blank answer and skips.
 	printf '%s (y/n) ' "$prompt" >&2
-	response=$(dd bs=1 count=1 2>/dev/null)
-	printf '\n' >&2
+	IFS= read -r response || return 1
+	response=$(printf '%s' "$response" | tr -d '\r')
 
-	# Return 0 only if response is y or Y
 	case "$response" in
-		[Yy]) return 0 ;;
+		[Yy] | [Yy][Ee][Ss]) return 0 ;;
 		*) return 1 ;;
 	esac
 }
