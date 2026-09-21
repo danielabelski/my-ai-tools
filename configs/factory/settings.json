@@ -43,7 +43,7 @@
   "completionSound": "fx-ok01",
   "customModels": [
     {
-      "apiKey": "sk-073cdf143ca37047-873498-c89b8e23",
+      "apiKey": "sk_omniroute",
       "baseUrl": "http://localhost:20128/v1",
       "displayName": "paid",
       "id": "custom:OmniRoute-0",
@@ -54,7 +54,7 @@
       "provider": "openai"
     },
     {
-      "apiKey": "sk-073cdf143ca37047-873498-c89b8e23",
+      "apiKey": "sk_omniroute",
       "baseUrl": "http://localhost:20128/v1",
       "displayName": "free",
       "id": "custom:OmniRoute-1",
@@ -65,7 +65,7 @@
       "provider": "openai"
     },
     {
-      "apiKey": "sk-073cdf143ca37047-873498-c89b8e23",
+      "apiKey": "sk_omniroute",
       "baseUrl": "http://localhost:20128/v1",
       "displayName": "premium",
       "id": "custom:OmniRoute-2",
