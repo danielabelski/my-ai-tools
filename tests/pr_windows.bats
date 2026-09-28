@@ -51,6 +51,9 @@ TEST_WORKFLOW="$REPO_ROOT/.github/workflows/test.yml"
     run grep -F 'runs-on: windows-2022' "$TEST_WORKFLOW"
     [ "$status" -eq 0 ]
 
+    run grep -F 'uses: oven-sh/setup-bun@v2' "$TEST_WORKFLOW"
+    [ "$status" -eq 0 ]
+
     run grep -F 'run: .\install.ps1 -DryRun -Yes' "$TEST_WORKFLOW"
     [ "$status" -eq 0 ]
 }

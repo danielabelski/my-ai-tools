@@ -30,6 +30,9 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v7
 
+      - name: Set up Bun
+        uses: oven-sh/setup-bun@v2
+
       - name: Parse installer
         shell: powershell
         run: |
