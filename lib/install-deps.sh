@@ -17,6 +17,10 @@ install_bun_now() {
 	local bun_checksum
 	bun_checksum=$(resolve_installer_checksum "bun")
 	if execute_installer "https://bun.sh/install" "$bun_checksum" "Bun"; then
+		if [ "$DRY_RUN" = true ]; then
+			return 0
+		fi
+
 		# Source shell profiles to get Bun environment
 		[ -f "$HOME/.bashrc" ] && source "$HOME/.bashrc" 2>/dev/null || true
 		[ -f "$HOME/.zshrc" ] && source "$HOME/.zshrc" 2>/dev/null || true
@@ -420,6 +424,10 @@ install_rust_if_needed() {
 		local rust_checksum
 		rust_checksum=$(resolve_installer_checksum "rust")
 		execute_installer "https://sh.rustup.rs" "$rust_checksum" "Rust" "-y"
+	fi
+
+	if [ "$DRY_RUN" = true ]; then
+		return 0
 	fi
 
 	if [ -x "$cargo_bin/cargo" ]; then

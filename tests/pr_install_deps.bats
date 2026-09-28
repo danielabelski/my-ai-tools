@@ -80,6 +80,35 @@ load helpers
 	[ "$output" = "/opt/demo/bin:/usr/bin:/bin" ]
 }
 
+@test "Bun and Rust installers do not require simulated binaries during dry-run" {
+	run bash -c '
+		export HOME="$(mktemp -d)" DRY_RUN=true BUN_INSTALL=""
+		source "$1/lib/common.sh"
+		source "$1/lib/install.sh"
+		resolve_installer_checksum() { printf "\n"; }
+		execute_installer() { return 0; }
+		PATH=/nonexistent
+		install_bun_now
+		install_rust_if_needed
+	' _ "$REPO_ROOT"
+	[ "$status" -eq 0 ]
+}
+
+@test "Bun and Rust installers still require installed binaries in real mode" {
+	run bash -c '
+		export HOME="$(mktemp -d)" DRY_RUN=false BUN_INSTALL=""
+		source "$1/lib/common.sh"
+		source "$1/lib/install.sh"
+		resolve_installer_checksum() { printf "\n"; }
+		execute_installer() { return 0; }
+		PATH=/nonexistent
+		(install_bun_now) || bun_failed=true
+		install_rust_if_needed || rust_failed=true
+		[ "$bun_failed" = true ] && [ "$rust_failed" = true ]
+	' _ "$REPO_ROOT"
+	[ "$status" -eq 0 ]
+}
+
 @test "local binary links create their directory, refresh symlinks, and preserve regular files" {
 	run bash -c '
 		export HOME="$(mktemp -d)" DRY_RUN=false
