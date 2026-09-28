@@ -22,3 +22,29 @@ jobs:
 
       - name: Run config validation tests
         run: bats tests/pr_*.bats tests/generate.bats tests/sh_reexec.bats
+
+  windows-installer:
+    name: Windows PowerShell Installer
+    runs-on: windows-2022
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      - name: Parse installer
+        shell: powershell
+        run: |
+          $tokens = $null
+          $errors = $null
+          [void][System.Management.Automation.Language.Parser]::ParseFile(
+            (Resolve-Path .\install.ps1),
+            [ref]$tokens,
+            [ref]$errors
+          )
+          if ($errors.Count -gt 0) {
+            $errors | Format-List
+            exit 1
+          }
+
+      - name: Run native Windows dry-run
+        shell: powershell
+        run: .\install.ps1 -DryRun -Yes

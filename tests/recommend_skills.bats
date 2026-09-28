@@ -1,9 +1,9 @@
 #!/usr/bin/env bats
-# Test suite for configs/recommend-skills.json and related README.md content
+# Test suite for configs/recommend-skills.json and related tool-reference content
 
 REPO_ROOT="$BATS_TEST_DIRNAME/.."
 RECOMMEND_SKILLS_JSON="$REPO_ROOT/configs/recommend-skills.json"
-README_FILE="$REPO_ROOT/README.md"
+README_FILE="$REPO_ROOT/TOOL_REFERENCE.md"
 
 # ---------------------------------------------------------------------------
 # configs/recommend-skills.json – structural / schema tests

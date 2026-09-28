@@ -77,11 +77,18 @@ function Find-GitBash {
 
 # Install jq using winget
 function Install-Jq {
+    param([bool]$InstallIfMissing = $true)
+
     Write-Info "Checking for jq installation..."
 
     $jqInPath = Get-Command jq -ErrorAction SilentlyContinue
     if ($jqInPath) {
         Write-Success "jq found at: $($jqInPath.Source)"
+        return $true
+    }
+
+    if (-not $InstallIfMissing) {
+        Write-Warn "jq not found. Dry-run mode will not install it."
         return $true
     }
 
@@ -162,7 +169,7 @@ function Test-Prerequisites {
     }
 
     # Check/Install jq
-    $jqInstalled = Install-Jq
+    $jqInstalled = Install-Jq -InstallIfMissing:(-not $DryRun)
     if (-not $jqInstalled) {
         $issues += "jq installation failed. Some features may not work."
     }
@@ -219,30 +226,44 @@ function Start-Installation {
         exit 1
     }
 
-    $tmpRoot = Join-Path $HOME ".claude\tmp"
-    New-Item -ItemType Directory -Path $tmpRoot -Force | Out-Null
-    $env:TMPDIR = $tmpRoot
+    $sourceDir = $null
+    $tempDir = $null
+    $exitCode = 1
 
-    $tempDir = Join-Path $tmpRoot ([System.IO.Path]::GetRandomFileName())
-    New-Item -ItemType Directory -Path $tempDir | Out-Null
+    if ($PSScriptRoot -and (Test-Path (Join-Path $PSScriptRoot "cli.sh"))) {
+        $sourceDir = $PSScriptRoot
+        Write-Info "Using local repository: $sourceDir"
+    }
+    else {
+        $tmpRoot = Join-Path $HOME ".claude\tmp"
+        New-Item -ItemType Directory -Path $tmpRoot -Force | Out-Null
+        $env:TMPDIR = $tmpRoot
+
+        $tempDir = Join-Path $tmpRoot ([System.IO.Path]::GetRandomFileName())
+        New-Item -ItemType Directory -Path $tempDir | Out-Null
+        $sourceDir = $tempDir
+    }
 
     try {
-        Write-Info "Cloning repository to temporary directory..."
-        & git clone --depth 1 https://github.com/jellydn/my-ai-tools.git $tempDir
+        if ($tempDir) {
+            Write-Info "Cloning repository to temporary directory..."
+            & git clone --depth 1 https://github.com/jellydn/my-ai-tools.git $sourceDir
 
-        if ($LASTEXITCODE -ne 0) {
-            Write-Err "Failed to clone repository"
-            Write-Info "Please check your internet connection and try again"
-            Write-Info "If the problem persists, the repository URL may have changed"
-            exit 1
+            if ($LASTEXITCODE -ne 0) {
+                Write-Err "Failed to clone repository"
+                Write-Info "Please check your internet connection and try again"
+                Write-Info "If the problem persists, the repository URL may have changed"
+                exit 1
+            }
+
+            Write-Success "Repository cloned successfully"
         }
 
-        Write-Success "Repository cloned successfully"
         Write-Info "Running installation script..."
         Write-Info "Bash path: $bashPath"
         Write-Info "Arguments: $($arguments -join ' ')"
 
-        Push-Location $tempDir
+        Push-Location $sourceDir
         try {
             if ($isNonInteractive) {
                 $bashArguments = if ($arguments.Count -gt 0) { $arguments -join ' ' } else { '' }
@@ -251,18 +272,17 @@ function Start-Installation {
             else {
                 & $bashPath "cli.sh" @arguments
             }
+            $exitCode = $LASTEXITCODE
         }
         finally {
             Pop-Location
         }
     }
     finally {
-        if (Test-Path $tempDir) {
+        if ($tempDir -and (Test-Path $tempDir)) {
             Remove-Item -Recurse -Force $tempDir -ErrorAction SilentlyContinue
         }
     }
-
-    $exitCode = $LASTEXITCODE
 
     if ($exitCode -eq 0) {
         Write-Success "Installation completed successfully!"

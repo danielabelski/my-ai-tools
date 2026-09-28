@@ -4,7 +4,7 @@
 load helpers
 
 REPO_ROOT="$BATS_TEST_DIRNAME/.."
-README="$REPO_ROOT/README.md"
+README="$REPO_ROOT/TOOL_REFERENCE.md"
 CONFIG_DIR="$REPO_ROOT/configs/devin"
 
 @test "README.md mentions Devin CLI in the supported-tools list" {

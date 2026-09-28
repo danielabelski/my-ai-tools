@@ -1,9 +1,9 @@
 #!/usr/bin/env bats
-# Tests for README.md documentation consistency
+# Tests for detailed tool-reference documentation consistency
 
 load helpers
 
-README_FILE="$REPO_ROOT/README.md"
+README_FILE="$REPO_ROOT/TOOL_REFERENCE.md"
 PI_SETTINGS="$REPO_ROOT/configs/pi/settings.json"
 
 @test "README.md Pi defaults match configs/pi/settings.json" {

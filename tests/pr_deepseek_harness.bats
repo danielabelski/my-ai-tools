@@ -7,7 +7,7 @@ LIB_INSTALL="$REPO_ROOT/lib/install.sh"
 CLI_SH="$REPO_ROOT/cli.sh"
 GENERATE_SH="$REPO_ROOT/generate.sh"
 CONFIG_DIR="$REPO_ROOT/configs/deepseek-harness"
-README="$REPO_ROOT/README.md"
+README="$REPO_ROOT/TOOL_REFERENCE.md"
 
 @test "DeepSeek Harness managed configs exist and are valid YAML" {
 	[ -f "$CONFIG_DIR/AGENTS.md" ]
