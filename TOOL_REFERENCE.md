@@ -638,7 +638,7 @@ Auto-format after file edits:
 - `ruff` - Python formatting (installed via mise, pipx, or pip)
 - `rustfmt` - Rust formatting (installed via mise or rustup)
 - `shfmt` - Shell script formatting (installed via mise, brew, or go install)
-- `stylua` - Lua formatting (installed via mise, brew, or cargo)
+- `stylua` - Lua formatting (installed from the official prebuilt npm package on Windows, or via mise, brew, or cargo)
 
 #### PreToolUse Hooks
 

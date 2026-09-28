@@ -51,3 +51,11 @@ jobs:
       - name: Run native Windows dry-run
         shell: powershell
         run: .\install.ps1 -DryRun -Yes
+
+      - name: Install StyLua without compiling Rust
+        shell: bash
+        run: |
+          source lib/common.sh
+          source lib/install.sh
+          install_stylua_if_needed
+          stylua --version

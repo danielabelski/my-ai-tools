@@ -56,4 +56,31 @@ TEST_WORKFLOW="$REPO_ROOT/.github/workflows/test.yml"
 
     run grep -F 'run: .\install.ps1 -DryRun -Yes' "$TEST_WORKFLOW"
     [ "$status" -eq 0 ]
+
+    run grep -F 'install_stylua_if_needed' "$TEST_WORKFLOW"
+    [ "$status" -eq 0 ]
+
+    run grep -F 'stylua --version' "$TEST_WORKFLOW"
+    [ "$status" -eq 0 ]
+}
+
+@test "Windows installs the official prebuilt stylua package instead of compiling with cargo" {
+    run bash -c '
+        export DRY_RUN=true IS_WINDOWS=true
+        source "$1/lib/common.sh"
+        source "$1/lib/install.sh"
+        IS_WINDOWS=true
+        _verify_package_manager() { echo npm; }
+        execute() { echo "$1"; }
+        command() {
+            if [ "$1" = "-v" ] && [ "$2" = "stylua" ]; then
+                return 1
+            fi
+            builtin command "$@"
+        }
+        install_stylua_if_needed
+    ' _ "$REPO_ROOT"
+    [ "$status" -eq 0 ]
+    [[ "$output" == *"npm install -g @johnnymorganz/stylua-bin"* ]]
+    [[ "$output" != *"cargo install stylua"* ]]
 }

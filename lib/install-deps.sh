@@ -484,7 +484,15 @@ install_stylua_if_needed() {
 	fi
 
 	log_warning "stylua not found. Installing stylua..."
-	if command -v mise &>/dev/null; then
+	if [ "$IS_WINDOWS" = true ]; then
+		local pkg_manager
+		pkg_manager=$(_verify_package_manager "stylua")
+		if [ -n "$pkg_manager" ]; then
+			execute "$pkg_manager install -g @johnnymorganz/stylua-bin"
+		else
+			log_warning "Bun or npm is required to install stylua on Windows."
+		fi
+	elif command -v mise &>/dev/null; then
 		execute "mise use -g stylua@latest"
 	elif command -v brew &>/dev/null; then
 		execute "brew install stylua"
