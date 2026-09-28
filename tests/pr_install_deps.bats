@@ -109,6 +109,18 @@ load helpers
 	[ "$status" -eq 0 ]
 }
 
+@test "curl one-line installer completes a dry-run" {
+	run bash -c '
+		test_home=$(mktemp -d)
+		git config --file "$test_home/.gitconfig" \
+			url."file://$1".insteadOf https://github.com/jellydn/my-ai-tools.git
+		HOME="$test_home" CI=true curl -fsSL "file://$1/install.sh" | \
+			HOME="$test_home" CI=true bash -s -- --dry-run
+	' _ "$REPO_ROOT"
+	[ "$status" -eq 0 ]
+	[[ "$output" == *"Installation complete!"* ]]
+}
+
 @test "local binary links create their directory, refresh symlinks, and preserve regular files" {
 	run bash -c '
 		export HOME="$(mktemp -d)" DRY_RUN=false
