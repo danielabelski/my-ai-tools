@@ -18,6 +18,11 @@ TEST_WORKFLOW="$REPO_ROOT/.github/workflows/test.yml"
     [ "$status" -eq 0 ]
 }
 
+@test "Windows PowerShell 5.1 installer contains only ASCII source text" {
+    run grep -nP '[^\x00-\x7F]' "$INSTALL_PS1"
+    [ "$status" -eq 1 ]
+}
+
 @test "Windows dry-run does not install a missing jq dependency" {
     run grep -F 'Install-Jq -InstallIfMissing:(-not $DryRun)' "$INSTALL_PS1"
     [ "$status" -eq 0 ]

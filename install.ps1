@@ -32,22 +32,22 @@ $ErrorActionPreference = "Stop"
 # Logging functions
 function Write-Info {
     param([string]$Message)
-    Write-Host "ℹ $Message" -ForegroundColor Blue
+    Write-Host "[INFO] $Message" -ForegroundColor Blue
 }
 
 function Write-Success {
     param([string]$Message)
-    Write-Host "✓ $Message" -ForegroundColor Green
+    Write-Host "[OK] $Message" -ForegroundColor Green
 }
 
 function Write-Warn {
     param([string]$Message)
-    Write-Host "⚠ $Message" -ForegroundColor Yellow
+    Write-Host "[WARN] $Message" -ForegroundColor Yellow
 }
 
 function Write-Err {
     param([string]$Message)
-    Write-Host "✗ $Message" -ForegroundColor Red
+    Write-Host "[ERROR] $Message" -ForegroundColor Red
 }
 
 # Find Git Bash
@@ -298,10 +298,10 @@ function Start-Installation {
 
 # Main
 Write-Host @"
-╔══════════════════════════════════════════════════════════════════════╗
-║                    AI Tools Setup - Windows                          ║
-║  PowerShell wrapper for Windows installation                        ║
-╚══════════════════════════════════════════════════════════════════════╝
+----------------------------------------------------------------------
+                    AI Tools Setup - Windows
+          PowerShell wrapper for Windows installation
+----------------------------------------------------------------------
 "@ -ForegroundColor Cyan
 
 Write-Info "Starting my-ai-tools installation..."
