@@ -781,8 +781,8 @@ safe_copy_dir() {
 		local dest_file="$dest_dir/$rel_path"
 		mkdir -p "$(dirname "$dest_file")"
 		if ! cp "$file" "$dest_file" 2>/dev/null; then
-			((errors++))
-			((skipped++))
+			errors=$((errors + 1))
+			skipped=$((skipped + 1))
 			[ "${VERBOSE:-false}" = true ] && log_warning "Skipped busy file: $rel_path"
 		fi
 	done < "$_find_list"

@@ -30,6 +30,31 @@ setup() {
     [[ "$output" == *"[DRY RUN]"* ]]
 }
 
+@test "safe_copy_dir skips an unreadable file with errexit enabled" {
+    local source_dir="$BATS_TEST_TMPDIR/source"
+    local dest_dir="$BATS_TEST_TMPDIR/dest"
+    mkdir -p "$source_dir"
+    printf 'blocked\n' > "$source_dir/a-blocked.txt"
+    printf 'copied\n' > "$source_dir/z-copied.txt"
+
+    run bash -c '
+        set -e
+        source "$1"
+        DRY_RUN=false
+        rsync() { return 1; }
+        cp() {
+            case "$1" in
+                *a-blocked.txt) return 1 ;;
+            esac
+            command cp "$@"
+        }
+        safe_copy_dir "$2" "$3"
+        test -f "$3/z-copied.txt"
+    ' _ "$BATS_TEST_DIRNAME/../lib/common.sh" "$source_dir" "$dest_dir"
+
+    [ "$status" -eq 0 ]
+}
+
 @test "validate_json returns 0 for valid JSON" {
     if ! command -v jq &>/dev/null; then
         skip "jq not installed"
