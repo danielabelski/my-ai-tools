@@ -1806,7 +1806,8 @@ Located in [`configs/pi/agents/`](configs/pi/agents/):
 
 ### Pi Packages
 
-Pi uses a package-based extension system (not MCP). Install packages with:
+Pi uses a package-based extension system. MCP is built into Pi core
+(`builtin:mcp` with codemode) — no adapter package needed. Install packages with:
 
 ```bash
 pi install pi-flow-enforcer
@@ -1824,7 +1825,6 @@ Then register them in `~/.pi/agent/settings.json`:
 		},
 		"https://github.com/davebcn87/pi-autoresearch",
 		"npm:@ff-labs/pi-fff",
-		"npm:pi-mcp-adapter",
 		"npm:pi-simplify",
 		"npm:pi-btw",
 		"npm:pi-code-previews",
@@ -1851,7 +1851,6 @@ Then register them in `~/.pi/agent/settings.json`:
 | `@plannotator/pi-extension`          | Interactive plan review with visual annotation                     |
 | `pi-autoresearch`                    | Autonomous experiment loop for optimization targets                |
 | `@ff-labs/pi-fff`                    | FFF-powered fuzzy file and content search                          |
-| `pi-mcp-adapter`                     | MCP (Model Context Protocol) adapter for Pi                        |
 | `pi-simplify`                        | Reviews changed code for clarity, consistency, and maintainability |
 | `pi-btw`                             | Parallel side conversations with `/btw` command                    |
 | `pi-code-previews`                   | Live previews of code changes during editing                       |
