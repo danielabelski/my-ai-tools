@@ -617,8 +617,8 @@ install_reasonix() {
 }
 
 install_pi() {
-	install_npm_tool "Pi" "pi" "@mariozechner/pi-coding-agent" \
-		"npm install -g @mariozechner/pi-coding-agent"
+	install_npm_tool "Pi" "pi" "@earendil-works/pi-coding-agent" \
+		"npm install -g @earendil-works/pi-coding-agent"
 }
 install_omp() {
 	install_npm_tool "Oh My Pi" "omp" "@oh-my-pi/pi-coding-agent" \
